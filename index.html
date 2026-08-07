@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panitia Zakat - Masjid Al Ikhlas</title>
+
+  <meta name="theme-color" content="#064e3b">
+
+  <!-- Ikon & library -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Tipografi: Plus Jakarta Sans (UI) + Amiri (kaligrafi Arab) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Gaya aplikasi -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="logo-title"><i class="fa-solid fa-mosque"></i> Panitia Zakat - Masjid Al Ikhlas</div>
+    <div> <button class="btn-login-nav" onclick="bukaModalLogin()" id="btnNavLogin">
+        <i class="fa-solid fa-lock"></i> Login Panitia
+      </button>
+
+      <button class="btn-logout-nav" onclick="prosesLogout()" id="btnNavLogout" style="display: none;">
+        <i class="fa-solid fa-right-from-bracket"></i> Keluar
+      </button>
+    </div>
+  </div>
+
+  <div id="viewPublik" class="view-section active">
+
+    <div class="hero-banner">
+      <i class="fa-solid fa-dharmachakra watermark-bg"></i>
+
+      <h1 class="hero-text">PENERIMAAN ZAKAT FITRAH</h1>
+      <h2 class="hero-text">MASJID AL IKHLAS</h2>
+      <p class="alamat hero-text">Griya Gamersi Lalung RT 05 RW 13</p>
+
+      <div class="filter-tahun hero-text">
+        <label style="color: var(--primary); font-weight:bold;"><i class="fa-solid fa-calendar-alt"></i> Tahun: </label>
+        <select id="pilihTahun" onchange="muatDataPublik()"></select>
+      </div>
+
+      <p class="tagline hero-text">"Sucikan Harta, Bersihkan Jiwa di Bulan Mulia"</p>
+
+      <div class="banner-cards">
+        <div class="b-card">
+          <div class="b-icon beras-icon"><i class="fa-solid fa-wheat-awn"></i></div>
+          <div class="b-text">
+            <h3>Beras Terkumpul</h3>
+            <div class="value" id="valBeras">0 <span style="font-size: 1.2rem;">Kg</span></div>
+          </div>
+        </div>
+        <div class="b-card">
+          <div class="b-icon uang-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+          <div class="b-text">
+            <h3>Uang Terkumpul</h3>
+            <div class="value" id="valUang">Rp 0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="quote-section">
+        <div class="quote-arab">خُذْ مِنْ أَمْوَالِهِمْ صَدَقَةً تُطَهِّرُهُمْ وَتُزَكِّيهِم بِهَا</div>
+        <div class="quote-arti">"Ambillah zakat dari sebagian harta mereka, dengan zakat itu kamu membersihkan dan mensucikan mereka." <br><b>(QS. At-Taubah: 103)</b></div>
+      </div>
+
+      <div class="section-header">
+        <h2><i class="fa-solid fa-users"></i> Daftar Warga (Muzakki)</h2>
+        <div class="badge-count" id="valMuzakki">0 Jiwa</div>
+      </div>
+
+            <input type="text" id="cariMuzakki" class="search-box" placeholder="🔍 Cari nama Anda di sini..." onkeyup="cariTabel('cariMuzakki', 'tabelMuzakki')">
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr><th>Tanggal</th><th>Nama Penyetor</th><th>Jenis Zakat</th><th>Bentuk</th><th>Jumlah</th></tr>
+          </thead>
+          <tbody id="tabelMuzakki"><tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="section-header">
+        <h2><i class="fa-solid fa-hand-holding-heart"></i> Zakat Tersalurkan (Mustahik)</h2>
+        <div class="badge-count" id="valTersalurkan">0.00 Kg Tersalurkan</div>
+      </div>
+
+            <input type="text" id="cariMustahik" class="search-box" placeholder="🔍 Cari nama penerima di sini..." onkeyup="cariTabel('cariMustahik', 'tabelTersalurkan')">
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr><th>Tanggal Diserahkan</th><th>Nama Penerima</th><th>Beras Diberikan</th></tr>
+          </thead>
+          <tbody id="tabelTersalurkan"><tr><td colspan="3" style="text-align: center;">Belum ada data penyaluran.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="viewPanitia" class="view-section">
+    <div class="container">
+
+      <div style="display: flex; justify-content: space-between; align-items: center; background: var(--primary); padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+      <div style="font-weight: bold; font-size: 15px;">
+        <i class="fa-solid fa-calendar-check"></i> Kelola Data Tahun:
+      </div>
+      <select id="pilihTahunPanitia" onchange="ubahTahunPanitia()" style="background: white; border: none; border-radius: 4px; padding: 5px 10px; font-weight: bold; color: var(--primary); cursor: pointer; outline: none;">
+      </select>
+      </div>
+
+      <div class="nav-tabs">
+        <button class="tab-btn" onclick="bukaTab('tabBeranda', this)">Beranda</button>
+        <button class="tab-btn active" id="btnTabCatat" onclick="bukaTab('tabCatat', this)">Catat Zakat</button>
+        <button class="tab-btn" onclick="bukaTab('tabPenerima', this)">Mustahik</button>
+        <button class="tab-btn" onclick="bukaTab('tabBelanja', this)">Form Pengeluaran</button>
+        <button class="tab-btn" onclick="bukaTab('tabPengaturan', this)">Pengaturan</button>
+      </div>
+
+      <div id="tabBeranda" class="tab-content">
+
+        <div class="hero-banner panitia-hero">
+          <i class="fa-solid fa-dharmachakra watermark-bg watermark-panitia"></i>
+
+          <h2 class="hero-text judul-panitia">STATISTIK ZAKAT PANITIA</h2>
+          <p class="hero-text tagline-panitia">Pantauan Real-Time Pemasukan & Penyaluran</p>
+
+          <div class="banner-cards">
+            <div class="b-card">
+              <div class="b-icon beras-icon"><i class="fa-solid fa-wheat-awn"></i></div>
+              <div class="b-text">
+                <h3>Beras Terkumpul</h3>
+                <div class="value" id="adminValBeras">0 <span class="satuan">Kg</span></div>
+              </div>
+            </div>
+            <div class="b-card">
+              <div class="b-icon uang-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+              <div class="b-text">
+                <h3>Uang Terkumpul</h3>
+                <div class="value" id="adminValUang">Rp 0</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="banner-cards kartu-baris-dua">
+            <div class="b-card card-muzakki">
+              <div class="b-icon icon-muzakki"><i class="fa-solid fa-users"></i></div>
+              <div class="b-text">
+                <h3>Total Muzakki</h3>
+                <div class="value" id="adminValMuzakki">0 <span class="satuan">Jiwa</span></div>
+              </div>
+            </div>
+            <div class="b-card card-tersalurkan">
+              <div class="b-icon icon-tersalurkan"><i class="fa-solid fa-hand-holding-heart"></i></div>
+              <div class="b-text">
+                <h3>Tersalurkan</h3>
+                <div class="value" id="adminValTersalurkan">0 <span class="satuan">Kg</span></div>
+              </div>
+            </div>
+          </div>
+        </div> <div class="container container-panitia">
+
+          <div class="quote-section">
+            <div class="quote-arab">خُذْ مِنْ أَمْوَالِهِمْ صَدَقَةً تُطَهِّرُهُمْ وَتُزَكِّيهِم بِهَا</div>
+            <div class="quote-arti">"Ambillah zakat dari sebagian harta mereka, dengan zakat itu kamu membersihkan dan mensucikan mereka." <br><b>(QS. At-Taubah: 103)</b></div>
+          </div>
+
+          <div class="section-header">
+            <h2><i class="fa-solid fa-users"></i> Riwayat Penerimaan Zakat</h2>
+          </div>
+          <input type="text" id="cariAdminMuzakki" class="search-box" placeholder="🔍 Cari nama penyetor..." onkeyup="cariTabel('cariAdminMuzakki', 'adminTabelMuzakki')">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr><th>Tanggal</th><th>Nama Penyetor</th><th>Jenis Zakat</th><th>Bentuk</th><th>Jumlah</th></tr>
+              </thead>
+              <tbody id="adminTabelMuzakki"><tr><td colspan="5" class="text-center">Memuat data...</td></tr></tbody>
+            </table>
+          </div>
+
+          <div class="section-header">
+            <h2><i class="fa-solid fa-hand-holding-heart"></i> Riwayat Penyaluran</h2>
+          </div>
+          <input type="text" id="cariAdminMustahik" class="search-box" placeholder="🔍 Cari nama penerima..." onkeyup="cariTabel('cariAdminMustahik', 'adminTabelTersalurkan')">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr><th>Tanggal Diserahkan</th><th>Nama Penerima</th><th>Beras Diberikan</th></tr>
+              </thead>
+              <tbody id="adminTabelTersalurkan"><tr><td colspan="3" class="text-center">Belum ada data penyaluran.</td></tr></tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+<div id="tabCatat" class="tab-content active">
+  <div class="form-card">
+    <h3 style="color: var(--primary); margin-top:0; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Form Penerimaan Zakat Warga</h3>
+    <div id="alertZakat" class="alert"></div>
+
+    <form id="formZakat" onsubmit="submitZakat(event)">
+
+      <div class="form-group">
+        <label>Nama Penyetor (KK)</label>
+        <input type="text" id="namaKK" class="form-control" required placeholder="Cth: Edi Susilo">
+      </div>
+
+      <div class="form-group">
+        <label>No. WhatsApp (Gunakan awalan 08 / 628)</label>
+        <input type="text" id="noWa" class="form-control" required placeholder="Cth: 08123456789">
+      </div>
+
+      <div class="form-group">
+        <label>Jenis Zakat</label>
+        <select id="jenisZakat" class="form-control" onchange="kalkulasiZakat()" required>
+          <option value="Zakat Fitrah">Zakat Fitrah</option>
+          <option value="Zakat Mal">Zakat Mal</option>
+          <option value="Fidyah">Fidyah</option>
+          <option value="Infaq">Infaq / Sedekah</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Bentuk Pembayaran</label>
+        <select id="bentukZakat" class="form-control" onchange="kalkulasiZakat()" required>
+          <option value="Uang">Uang (Rp)</option>
+          <option value="Beras">Beras (Kg)</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="grupJumlahJiwa">
+        <label>Jumlah Jiwa (Tanggungan)</label>
+        <input type="number" id="jumlahJiwa" class="form-control" min="1" value="1" oninput="generateRincianNama(); kalkulasiZakat();">
+      </div>
+
+      <div id="containerRincian" class="rincian-container">
+        <label style="color: var(--primary);">Rincian Nama Anggota Keluarga:</label>
+        <div id="listRincian"></div>
+      </div>
+
+      <div class="form-group" style="margin-top: 15px;">
+        <label>Total Dibayar (Otomatis)</label>
+        <input type="text" id="totalDibayar" class="form-control" required>
+        <small style="color: var(--text-light);" id="hintHitung">Hasil hitung otomatis dari sheet konfigurasi.</small>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btnSubmitZakat" style="margin-top: 10px; width: 100%;">Simpan & Kirim Resi WA</button>
+
+    </form>
+  </div>
+</div>
+
+      <div id="tabPenerima" class="tab-content">
+        <div class="form-card">
+          <h3 style="color: var(--primary); margin-top:0;">Pendataan Calon Mustahik Baru</h3>
+          <div id="alertMustahik" class="alert"></div>
+          <form id="formMustahik" onsubmit="submitMustahik(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nama Calon Penerima</label>
+                <input type="text" id="namaMustahik" class="form-control" required placeholder="Cth: Mbah Kromo">
+              </div>
+              <div class="form-group">
+                <label>Alamat / RT</label>
+                <input type="text" id="alamatMustahik" class="form-control" required placeholder="Cth: RT 05 RW 13">
+              </div>
+            </div>
+            <button type="submit" class="btn-submit">Simpan Calon Mustahik</button>
+          </form>
+        </div>
+
+        <div class="form-card">
+          <h3 style="color: var(--accent); margin-top:0;">Eksekusi Penyerahan (Malam Takbiran)</h3>
+          <div id="alertPenyerahan" class="alert"></div>
+          <form id="formPenyerahan" onsubmit="submitPenyerahan(event)">
+            <div class="form-group">
+              <label>Pilih Mustahik (Yang belum menerima)</label>
+              <select id="pilihMustahik" class="form-control" required>
+                <option value="">-- Memuat data... --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Jatah Beras (Kg)</label>
+              <input type="number" step="0.01" id="jatahBerasFinal" class="form-control" required>
+              <small style="color: var(--text-light);">*Sistem menyarankan angka di atas berdasarkan total sisa stok dibagi jumlah mustahik. Bisa Anda ubah manual jika perlu.</small>
+            </div>
+            <button type="submit" class="btn-submit" style="background-color: var(--primary);">Konfirmasi Diserahkan</button>
+          </form>
+        </div>
+
+    <div class="form-card" style="margin-top: 25px;">
+
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">
+        <h3 style="color: var(--primary); margin: 0;">
+          <i class="fa-solid fa-list-check"></i> Daftar Mustahik (Penerima Zakat)
+        </h3>
+
+        <button id="btnRefreshMustahik" type="button" onclick="muatTabelMustahik()" style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: all 0.2s;">
+          <i class="fa-solid fa-arrows-rotate"></i> Refresh Data
+        </button>
+      </div>
+
+      <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">
+        Data ini berfungsi sebagai referensi (Master Data) untuk tahun-tahun berikutnya. Status penyerahan akan mereset otomatis saat berganti tahun di pengaturan.
+      </p>
+
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <thead>
+            <tr style="background-color: #f8fafc; text-align: left;">
+              <th style="padding: 12px 10px; border-bottom: 2px solid #e2e8f0;">No</th>
+              <th style="padding: 12px 10px; border-bottom: 2px solid #e2e8f0;">Nama Mustahik</th>
+              <th style="padding: 12px 10px; border-bottom: 2px solid #e2e8f0;">Alamat / RT</th>
+              <th style="padding: 12px 10px; border-bottom: 2px solid #e2e8f0; text-align: right;">Jatah</th>
+              <th style="padding: 12px 10px; border-bottom: 2px solid #e2e8f0; text-align: center;">Status</th>
+              <th style="padding: 12px 10px; border-bottom: 2px solid #e2e8f0; text-align: center;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="bodyTabelMustahik">
+            <tr>
+              <td colspan="6" style="text-align: center; padding: 20px; color: #64748b;">⏳ Memuat data master mustahik...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+      </div>
+
+<div id="tabBelanja" class="tab-content">
+  <div class="form-card">
+  <h3 id="judulBelanja" style="color: var(--primary); margin-top:0;">Konversi Uang ke Beras</h3>
+  <p id="deskripsiBelanja" style="font-size: 0.9rem; color: var(--text-light);">Gunakan form ini setelah panitia membelanjakan uang zakat untuk membeli stok beras tambahan.</p>
+  <div id="alertBelanja" class="alert"></div>
+  </div>
+
+<form id="formBelanja" onsubmit="submitBelanja(event)">
+
+  <div class="form-group">
+    <label>Jenis Belanja / Pengeluaran</label>
+    <select id="kategoriBelanja" class="form-control" onchange="aturFormBelanja()" style="padding: 10px; cursor: pointer;">
+      <option value="Beras">Beras (Zakat)</option>
+      <option value="Lainnya">Lainnya (Plastik, ATK, Konsumsi, dll)</option>
+      <option value="Setor">Setor ke Kas Masjid (Tutup Buku)</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Nominal Uang Dipakai (Rp)</label>
+    <input type="number" id="uangDipakai" class="form-control" required oninput="kalkulasiBelanja()">
+  </div>
+
+  <div id="sectionBeras">
+    <div class="form-group">
+      <label>Harga Beli per Kg (Rp)</label>
+      <input type="number" id="hargaBeliBeras" class="form-control" oninput="kalkulasiBelanja()">
+    </div>
+
+    <div class="form-group">
+      <label>Total Beras Didapat (Kg)</label>
+      <input type="number" step="0.01" id="berasDidapat" class="form-control" readonly style="background-color: #f8fafc; font-weight: bold;">
+      <small style="color: var(--text-light);">*Dihitung otomatis: Uang ÷ Harga</small>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Keterangan / Tempat Beli</label>
+    <input type="text" id="ketBelanja" class="form-control" required placeholder="Cth: Beli Plastik 2 Pack di Toko Berkah">
+  </div>
+
+  <div class="form-group">
+    <label>Upload Bukti Struk (Opsional)</label>
+    <input type="file" id="strukBelanja" class="form-control" accept="image/*" style="padding: 5px;">
+    <small style="color: var(--text-light);">*Format gambar (JPG/PNG). Maksimal 2MB.</small>
+  </div>
+
+  <button type="submit" class="btn-submit" id="btnSubmitBelanja">Simpan Catatan Belanja</button>
+</form>
+
+  <div class="form-card" style="margin-top: 25px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">
+        <h3 style="color: var(--primary); margin: 0;">
+          <i class="fa-solid fa-cart-shopping"></i> Riwayat Pengeluaran atau Belanja
+        </h3>
+
+        <button id="btnRefreshBelanja" type="button" onclick="muatTabelBelanja()" style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: all 0.2s;">
+          <i class="fa-solid fa-arrows-rotate"></i> Refresh
+        </button>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <thead>
+            <tr style="background-color: #f8fafc; text-align: left;">
+              <th style="padding: 12px 10px; border-bottom: 2px solid #e2e8f0;">Tanggal</th>
+              <th style="padding: 12px 10px; border-bottom: 2px solid #e2e8f0; text-align: right;">Uang Dipakai</th>
+              <th style="padding: 12px 10px; border-bottom: 2px solid #e2e8f0; text-align: right;">Beras Didapat</th>
+              <th style="padding: 12px 10px; border-bottom: 2px solid #e2e8f0;">Keterangan</th>
+              <th style="padding: 12px 10px; border-bottom: 2px solid #e2e8f0; text-align: center;">Bukti Struk</th>
+            </tr>
+          </thead>
+          <tbody id="bodyTabelBelanja">
+            <tr>
+              <td colspan="5" style="text-align: center; padding: 20px; color: #64748b;">⏳ Memuat riwayat belanja...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    </div>
+
+<div id="tabPengaturan" class="tab-content">
+
+  <div class="form-card">
+    <h3 style="color: var(--primary); margin-top:0;"><i class="fa-solid fa-gear"></i> Pengaturan Sistem Zakat</h3>
+    <p style="font-size: 0.9rem; color: var(--text-light);">Ubah nilai di bawah ini untuk mengupdate file Spreadsheet CONF_ZAKAT secara langsung.</p>
+
+    <div id="alertPengaturan" class="alert"></div>
+    <form id="formPengaturan" onsubmit="submitPengaturan(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Zakat Fitrah (Uang / Rp)</label>
+          <input type="number" id="setUangFitrah" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Zakat Fitrah (Beras / Kg)</label>
+          <input type="number" step="0.01" id="setBerasFitrah" class="form-control" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tarif Fidyah per Hari (Uang / Rp)</label>
+          <input type="number" id="setFidyahUang" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Tarif Fidyah per Hari (Beras / Kg)</label>
+          <input type="number" step="0.01" id="setFidyahBeras" class="form-control" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Harga Beras per Kg (Rp)</label>
+        <input type="number" id="setHargaBeras" class="form-control" required>
+      </div>
+      <button type="submit" class="btn-submit" style="background-color: var(--primary);">Simpan Pengaturan</button>
+    </form>
+  </div> <div class="form-card" style="margin-top: 25px;">
+    <h3 style="color: #ef4444; margin-top:0;"><i class="fa-solid fa-key"></i> Keamanan (Ganti PIN)</h3>
+    <p style="font-size: 0.9rem; color: var(--text-light);">Ubah PIN akses masuk untuk panitia (Minimal 6 Angka).</p>
+    <form id="formGantiPin" onsubmit="submitGantiPin(event)">
+      <div class="form-group" style="margin-bottom: 15px;">
+        <label>PIN Lama (Verifikasi)</label>
+        <input type="password" id="pinLama" class="form-control" required placeholder="Masukkan PIN saat ini">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>PIN Baru</label>
+          <input type="password" id="pinBaru" class="form-control" required placeholder="Cth: 123456" minlength="4">
+        </div>
+        <div class="form-group">
+          <label>Ulangi PIN Baru</label>
+          <input type="password" id="pinKonfirmasi" class="form-control" required placeholder="Ketik ulang PIN">
+        </div>
+      </div>
+      <button type="submit" class="btn-submit" style="background-color: #ef4444;" id="btnGantiPin">Simpan PIN Baru</button>
+    </form>
+
+  </div> <div class="card" style="margin-top: 25px; border-left: 5px solid #11998e; background-color: #f8fdfb; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+    <h3 style="color: #11998e; margin-top: 0; margin-bottom: 10px;">
+      <i class="fa-solid fa-file-pdf"></i> Laporan Pertanggungjawaban (LPJ)
+    </h3>
+    <p style="color: #555; margin-bottom: 20px; font-size: 14px;">
+      Unduh rekapitulasi lengkap data penerimaan, belanja beras, dan penyaluran zakat tahun ini dalam format PDF resmi yang siap cetak.
+    </p>
+    <button id="btnCetakPDF" class="btn-submit" style="width: 100%; font-size: 15px; background-color: #11998e;" onclick="prosesCetakPDF()">
+      📄 Buat & Unduh Laporan PDF
+    </button>
+  </div> </div> </div> </div> <div class="modal-overlay" id="modalLogin">
+  <div class="login-box">
+    <h2 style="color: var(--primary); margin-top: 0;">Akses Panitia</h2>
+    <p style="color: var(--text-light); font-size: 0.9rem;">Masukkan PIN Zakat Anda</p>
+    <input type="password" id="inputPin" placeholder="••••••" maxlength="6">
+    <button class="btn-full" onclick="prosesLogin()" id="btnLoginSubmit">Masuk</button>
+    <button class="btn-close" onclick="tutupModalLogin()">Batal</button>
+    <div id="msgLogin" style="color: red; margin-top: 10px; font-size: 0.9rem;"></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>

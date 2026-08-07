@@ -1,0 +1,319 @@
+/* ==========================================
+   1. CSS VARIABLES & BASE
+   ========================================== */
+:root {
+  --primary: #064e3b;      /* Hijau Zamrud */
+  --primary-deep: #053a2c; /* Zamrud lebih pekat (untuk gradasi) */
+  --secondary: #10b981;    /* Hijau Cerah */
+  --accent: #fbbf24;       /* Emas */
+  --accent-deep: #f59e0b;  /* Emas tua */
+  --bg-color: #eef4f0;     /* Off-white bernuansa hijau tipis */
+  --surface: #ffffff;
+  --text-dark: #1e293b;
+  --text-light: #64748b;
+  --line: #e6ede9;
+  --radius: 16px;
+  --ring: 0 0 0 3px rgba(16, 185, 129, 0.25);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Plus Jakarta Sans', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-dark);
+  margin: 0;
+  padding: 0;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Fokus keyboard yang jelas (aksesibilitas) */
+:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 2px;
+}
+
+/* Container: dulu tidak ada aturannya — kini jadi kolom rapi di tengah */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 18px 40px;
+}
+
+/* ==========================================
+   2. NAVBAR & HEADER HERO (STYLE PAMFLET + CAKRA)
+   ========================================== */
+.navbar {
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(180%) blur(10px);
+  -webkit-backdrop-filter: saturate(180%) blur(10px);
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 0 var(--line), 0 6px 20px rgba(6, 78, 59, 0.06);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo-title { font-weight: 800; color: var(--primary); font-size: 1.15rem; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+.logo-title i { color: var(--secondary); }
+
+.btn-login-nav, .btn-logout-nav {
+  color: white; border: none; padding: 9px 18px; border-radius: 999px;
+  font-weight: 700; font-size: 0.9rem; cursor: pointer;
+  font-family: inherit; transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.btn-login-nav { background-color: var(--primary); box-shadow: 0 4px 12px rgba(6, 78, 59, 0.25); }
+.btn-login-nav:hover { background-color: var(--secondary); transform: translateY(-1px); }
+.btn-logout-nav { background-color: #ef4444; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25); }
+.btn-logout-nav:hover { background-color: #dc2626; transform: translateY(-1px); }
+
+/* Hero Banner Terang ala Pamflet */
+.hero-banner {
+  background: radial-gradient(120% 120% at 85% 0%, #eafaf1 0%, #f4fbf6 55%, #eef7f1 100%);
+  position: relative;
+  padding: 54px 20px 84px;
+  text-align: center;
+  color: var(--primary);
+  overflow: hidden;
+  border-bottom: 14px solid var(--primary);
+  border-radius: 0 0 42px 42px;
+}
+
+/* Animasi Cakra Berputar */
+@keyframes spinSlow {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Cakra FontAwesome Hijau Gagah */
+.watermark-bg {
+  position: absolute;
+  top: 50%;
+  left: 85%;
+  font-size: 600px;
+  color: var(--primary);
+  opacity: 0.07;
+  z-index: 1;
+  animation: spinSlow 60s linear infinite;
+  pointer-events: none;
+}
+
+/* Pastikan Teks Berada di Atas Cakra */
+.hero-text { position: relative; z-index: 5; }
+
+/* Tipografi Header */
+.hero-banner h1 { margin: 0; font-size: 2.15rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+.hero-banner h2 { margin: 6px 0 10px; font-size: 1.7rem; font-weight: 800; color: #1e293b; letter-spacing: -0.01em; }
+.hero-banner p.alamat { margin: 0; font-size: 1.05rem; color: #334155; font-weight: 500; }
+.hero-banner p.tagline { margin: 24px 0; font-size: 1.15rem; font-weight: 600; font-style: italic; color: var(--text-dark); }
+
+.filter-tahun {
+  margin-top: 14px; display: inline-flex; align-items: center; gap: 6px;
+  background: white; padding: 7px 16px; border-radius: 999px;
+  border: 1.5px solid var(--primary); box-shadow: 0 4px 12px rgba(6, 78, 59, 0.08);
+}
+.filter-tahun select { background: transparent; color: var(--primary); border: none; font-size: 1rem; font-weight: 700; outline: none; cursor: pointer; font-family: inherit; }
+
+/* ==========================================
+   3. KARTU STATISTIK (EFEK 3D ALA PAMFLET)
+   ========================================== */
+.banner-cards { display: flex; justify-content: center; gap: 20px; position: relative; z-index: 10; margin-top: 22px; flex-wrap: wrap; }
+
+.b-card {
+  background: white; border: 2.5px solid var(--primary); border-radius: 16px; padding: 16px 24px;
+  display: flex; align-items: center; gap: 18px; min-width: 260px;
+  box-shadow: 0 7px 0 -1px var(--primary), 0 16px 24px -12px rgba(6, 78, 59, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.b-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 0 -1px var(--primary), 0 22px 30px -14px rgba(6, 78, 59, 0.4);
+}
+
+.b-icon { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 2.7rem; flex-shrink: 0; }
+.beras-icon { color: #16a34a; }
+.uang-icon { color: #047857; }
+
+.b-text { text-align: left; }
+.b-text h3 { margin: 0 0 4px; font-size: 0.78rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+.b-text .value { margin: 0; font-size: 1.9rem; font-weight: 800; color: var(--text-dark); letter-spacing: -0.02em; }
+
+/* ==========================================
+   4. QUOTE ISLAMI (PEMISAH)
+   ========================================== */
+.quote-section {
+  text-align: center; margin: 26px 0 40px; padding: 34px 24px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfefc 100%);
+  border-radius: var(--radius); border: 1px solid var(--line);
+  box-shadow: 0 10px 30px -18px rgba(6, 78, 59, 0.25);
+}
+.quote-arab {
+  font-family: 'Amiri', 'Segoe UI', serif;
+  font-size: 2.6rem; color: var(--primary); margin-bottom: 16px;
+  font-weight: 700; line-height: 1.7; direction: rtl;
+}
+.quote-arti { font-style: italic; color: var(--text-light); max-width: 760px; margin: 0 auto; line-height: 1.65; }
+.quote-arti b { color: var(--primary); font-style: normal; }
+
+/* ==========================================
+   5. TABEL DATA & PENCARIAN (SCROLLABLE)
+   ========================================== */
+.section-header { margin-top: 38px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 2px solid var(--line); padding-bottom: 10px; flex-wrap: wrap; }
+.section-header h2 { color: var(--primary); margin: 0; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+.badge-count { background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%); color: #3d2c00; padding: 6px 15px; border-radius: 999px; font-weight: 700; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); white-space: nowrap; }
+
+/* Kotak Pencarian */
+.search-box {
+  width: 100%; padding: 13px 16px; margin-bottom: 15px;
+  border: 1.5px solid var(--line); border-radius: 12px; font-size: 1rem;
+  box-sizing: border-box; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: inherit; background: white;
+}
+.search-box:focus { outline: none; border-color: var(--secondary); box-shadow: var(--ring); }
+
+/* Container Tabel Scroll */
+.table-container {
+  background: white; border-radius: var(--radius);
+  box-shadow: 0 10px 30px -20px rgba(6, 78, 59, 0.35);
+  overflow-y: auto; overflow-x: auto;
+  max-height: 450px;
+  margin-bottom: 40px;
+  border: 1px solid var(--line);
+}
+
+table { width: 100%; border-collapse: collapse; min-width: 600px; }
+
+thead th {
+  background-color: var(--primary); color: white;
+  position: sticky; top: 0; z-index: 2;
+  font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em;
+}
+
+th, td { padding: 13px 16px; text-align: left; border-bottom: 1px solid var(--line); }
+tbody tr { transition: background-color 0.15s ease; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background-color: #f4faf7; }
+td.nominal { font-weight: 700; color: var(--secondary); }
+
+/* Efek Highlight Kuning Terang jika nama ketemu */
+.highlight-row { background-color: #fef08a !important; }
+
+/* ==========================================
+   6. RESPONSIVE DESIGN
+   ========================================== */
+@media (max-width: 768px) {
+  .stats-grid { grid-template-columns: 1fr; margin-top: -30px; }
+  .hero-banner h1 { font-size: 1.75rem; }
+  .hero-banner h2 { font-size: 1.4rem; }
+  .quote-arab { font-size: 2rem; }
+  .b-card { min-width: 0; width: 100%; }
+  .banner-cards { gap: 14px; }
+  .navbar { padding: 12px 14px; }
+  .logo-title { font-size: 0.98rem; }
+  .container { padding: 0 14px 32px; }
+}
+
+/* Hormati preferensi kurangi-gerak */
+@media (prefers-reduced-motion: reduce) {
+  .watermark-bg { animation: none; }
+  * { transition: none !important; }
+}
+
+/* ==========================================
+   7. MODAL & STRUKTUR VIEW
+   ========================================== */
+.view-section { display: none; }
+.view-section.active { display: block; }
+
+.modal-overlay { position: fixed; inset: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(3px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+.modal-overlay.active { display: flex; }
+.login-box { background: white; padding: 32px; border-radius: 20px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 24px 60px -20px rgba(6, 78, 59, 0.5); }
+.login-box h2 { font-weight: 800; letter-spacing: -0.01em; }
+.login-box input { width: 100%; padding: 14px; margin: 16px 0; border: 1.5px solid var(--line); border-radius: 12px; text-align: center; font-size: 1.5rem; letter-spacing: 6px; box-sizing: border-box; font-family: inherit; }
+.login-box input:focus { outline: none; border-color: var(--secondary); box-shadow: var(--ring); }
+.btn-full { width: 100%; padding: 13px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 1.05rem; cursor: pointer; font-family: inherit; transition: background-color 0.2s ease, transform 0.15s ease; }
+.btn-full:hover { background: var(--secondary); transform: translateY(-1px); }
+.btn-close { background: transparent; border: none; color: var(--text-light); margin-top: 12px; cursor: pointer; font-family: inherit; font-size: 0.95rem; }
+
+/* ==========================================
+   8. PANEL PANITIA (TABS & FORM)
+   ========================================== */
+.nav-tabs { display: flex; overflow-x: auto; background: white; border: 1px solid var(--line); margin-bottom: 20px; border-radius: 14px; padding: 4px; gap: 4px; box-shadow: 0 6px 20px -14px rgba(6, 78, 59, 0.3); }
+.tab-btn { flex: 1; padding: 12px 14px; background: none; border: none; font-weight: 700; color: var(--text-light); cursor: pointer; white-space: nowrap; border-radius: 10px; font-family: inherit; font-size: 0.92rem; transition: background-color 0.2s ease, color 0.2s ease; }
+.tab-btn:hover { color: var(--primary); background: #f4faf7; }
+.tab-btn.active { color: var(--primary); background-color: #ecfdf5; box-shadow: inset 0 -3px 0 var(--accent); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.form-card { background: white; padding: 22px; border-radius: var(--radius); margin-bottom: 20px; border-top: 4px solid var(--secondary); box-shadow: 0 10px 30px -20px rgba(6, 78, 59, 0.35); }
+.form-card h3 { letter-spacing: -0.01em; }
+.form-group { margin-bottom: 16px; text-align: left; }
+.form-group label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 0.9rem; color: #334155; }
+.form-control { width: 100%; padding: 11px 13px; border: 1.5px solid var(--line); border-radius: 10px; box-sizing: border-box; font-family: inherit; font-size: 0.98rem; background: white; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+.form-control:focus { outline: none; border-color: var(--secondary); box-shadow: var(--ring); }
+.form-row { display: flex; gap: 15px; flex-wrap: wrap; }
+.form-row .form-group { flex: 1; min-width: 150px; }
+
+.btn-submit { width: 100%; padding: 13px; background-color: var(--secondary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; font-family: inherit; font-size: 1rem; transition: filter 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease; box-shadow: 0 6px 16px -6px rgba(16, 185, 129, 0.5); }
+.btn-submit:hover { filter: brightness(1.05); transform: translateY(-1px); }
+.btn-submit:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+.rincian-container { background: #f6fbf8; padding: 16px; border-radius: 12px; border: 1px dashed #b6d8c8; margin-top: 5px; display: none; }
+.rincian-container.active { display: block; }
+.rincian-item { margin-bottom: 10px; }
+.rincian-item input { width: 100%; padding: 10px; border: 1.5px solid var(--line); border-radius: 8px; font-family: inherit; }
+.rincian-item input:focus { outline: none; border-color: var(--secondary); box-shadow: var(--ring); }
+
+.alert { padding: 12px 14px; border-radius: 10px; margin-bottom: 15px; display: none; font-weight: 700; text-align: center; }
+.alert.success { background-color: #d1fae5; color: #065f46; display: block; }
+.alert.error { background-color: #fee2e2; color: #991b1b; display: block; }
+.alert.danger { background-color: #fee2e2; color: #991b1b; display: block; }
+
+/* Kartu umum (mis. blok LPJ) */
+.card { border-radius: var(--radius); }
+
+/* ==========================================
+   9. KUSTOMISASI BERANDA PANITIA
+   ========================================== */
+.panitia-hero { border-radius: var(--radius); margin-bottom: 20px; padding: 32px 20px; border-bottom-width: 12px; }
+.watermark-panitia { top: 50%; }
+.judul-panitia { color: var(--primary); margin-top: 0; font-weight: 800; letter-spacing: -0.01em; }
+.tagline-panitia { color: var(--text-dark); margin-bottom: 20px; }
+.kartu-baris-dua { margin-top: 15px; }
+
+/* Pewarnaan Khusus Kartu Panitia */
+.card-muzakki { border-color: #3b82f6; box-shadow: 0 7px 0 -1px #3b82f6, 0 16px 24px -12px rgba(59, 130, 246, 0.35); }
+.card-muzakki:hover { box-shadow: 0 10px 0 -1px #3b82f6, 0 22px 30px -14px rgba(59, 130, 246, 0.4); }
+.icon-muzakki { color: #3b82f6; }
+
+.card-tersalurkan { border-color: #f59e0b; box-shadow: 0 7px 0 -1px #f59e0b, 0 16px 24px -12px rgba(245, 158, 11, 0.35); }
+.card-tersalurkan:hover { box-shadow: 0 10px 0 -1px #f59e0b, 0 22px 30px -14px rgba(245, 158, 11, 0.4); }
+.icon-tersalurkan { color: #f59e0b; }
+
+/* Utilitas */
+.container-panitia { padding: 0; margin-top: 10px; }
+.satuan { font-size: 1.15rem; font-weight: 600; }
+.text-center { text-align: center; }
+
+/* Desain Tombol PDF Glowing (Versi Kebal Peluru) */
+.btn-glowing-green {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 8px 20px !important;
+  border-radius: 50px !important;
+  font-weight: bold !important;
+  font-size: 14px !important;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.8), 0 0 15px rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 4px 15px rgba(56, 239, 125, 0.5) !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+}
+.btn-glowing-green:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(56, 239, 125, 0.8) !important;
+}
