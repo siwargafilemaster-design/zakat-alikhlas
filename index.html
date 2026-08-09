@@ -20,7 +20,7 @@
 </head>
 <body>
 
-  <!-- ===== Header ramping (berbagi untuk kedua view) ===== -->
+  <!-- ===== Header ramping ===== -->
   <div class="navbar">
     <div class="logo-title"><img src="al-ikhlas.png" alt="Logo Al Ikhlas" class="logo-img"> Zakat Al Ikhlas</div>
     <div>
@@ -77,24 +77,14 @@
         <div class="badge-count" id="valMuzakki">0 Jiwa</div>
       </div>
       <input type="text" id="cariMuzakki" class="search-box" placeholder="🔍 Cari nama Anda di sini..." onkeyup="cariTabel('cariMuzakki', 'tabelMuzakki')">
-      <div class="table-container">
-        <table>
-          <thead><tr><th>Tanggal</th><th>Nama Penyetor</th><th>Jenis</th><th>Bentuk</th><th>Jumlah</th></tr></thead>
-          <tbody id="tabelMuzakki"><tr><td colspan="5" class="text-center">Memuat data...</td></tr></tbody>
-        </table>
-      </div>
+      <div class="list-cards" id="tabelMuzakki"><div class="empty-hint">Memuat data...</div></div>
 
       <div class="section-header">
         <h2><i class="fa-solid fa-hand-holding-heart"></i> Tersalurkan</h2>
         <div class="badge-count" id="valTersalurkan">0 Kg</div>
       </div>
       <input type="text" id="cariMustahik" class="search-box" placeholder="🔍 Cari nama penerima di sini..." onkeyup="cariTabel('cariMustahik', 'tabelTersalurkan')">
-      <div class="table-container">
-        <table>
-          <thead><tr><th>Tanggal</th><th>Nama Penerima</th><th>Beras</th></tr></thead>
-          <tbody id="tabelTersalurkan"><tr><td colspan="3" class="text-center">Belum ada data penyaluran.</td></tr></tbody>
-        </table>
-      </div>
+      <div class="list-cards" id="tabelTersalurkan"><div class="empty-hint">Belum ada data penyaluran.</div></div>
     </div>
   </div>
 
@@ -111,7 +101,7 @@
     <select id="pilihTahunPanitia" onchange="ubahTahunPanitia()" style="display:none;"></select>
 
     <!-- ===== BERANDA / DASHBOARD ===== -->
-    <div id="tabBeranda" class="tab-content">
+    <div id="tabBeranda" class="tab-content active">
       <div class="container-panitia">
         <div class="saldo">
           <div class="glow"></div>
@@ -129,54 +119,11 @@
 
         <div class="section-header"><h2><i class="fa-solid fa-users"></i> Riwayat Penerimaan</h2></div>
         <input type="text" id="cariAdminMuzakki" class="search-box" placeholder="🔍 Cari nama penyetor..." onkeyup="cariTabel('cariAdminMuzakki', 'adminTabelMuzakki')">
-        <div class="table-container">
-          <table>
-            <thead><tr><th>Tanggal</th><th>Nama Penyetor</th><th>Jenis</th><th>Bentuk</th><th>Jumlah</th></tr></thead>
-            <tbody id="adminTabelMuzakki"><tr><td colspan="5" class="text-center">Memuat data...</td></tr></tbody>
-          </table>
-        </div>
+        <div class="list-cards" id="adminTabelMuzakki"><div class="empty-hint">Memuat data...</div></div>
 
         <div class="section-header"><h2><i class="fa-solid fa-hand-holding-heart"></i> Riwayat Penyaluran</h2></div>
         <input type="text" id="cariAdminMustahik" class="search-box" placeholder="🔍 Cari nama penerima..." onkeyup="cariTabel('cariAdminMustahik', 'adminTabelTersalurkan')">
-        <div class="table-container">
-          <table>
-            <thead><tr><th>Tanggal</th><th>Nama Penerima</th><th>Beras</th></tr></thead>
-            <tbody id="adminTabelTersalurkan"><tr><td colspan="3" class="text-center">Belum ada data penyaluran.</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== CATAT ZAKAT ===== -->
-    <div id="tabCatat" class="tab-content active">
-      <div class="form-card">
-        <h3 style="color:var(--primary); margin-top:0;">Form Penerimaan Zakat Warga</h3>
-        <div id="alertZakat" class="alert"></div>
-        <form id="formZakat" onsubmit="submitZakat(event)">
-          <div class="form-group"><label>Nama Penyetor (KK)</label><input type="text" id="namaKK" class="form-control" required placeholder="Cth: Edi Susilo"></div>
-          <div class="form-group"><label>No. WhatsApp (awalan 08 / 628)</label><input type="text" id="noWa" class="form-control" required placeholder="Cth: 08123456789"></div>
-          <div class="form-group"><label>Jenis Zakat</label>
-            <select id="jenisZakat" class="form-control" onchange="kalkulasiZakat()" required>
-              <option value="Zakat Fitrah">Zakat Fitrah</option>
-              <option value="Zakat Mal">Zakat Mal</option>
-              <option value="Fidyah">Fidyah</option>
-              <option value="Infaq">Infaq / Sedekah</option>
-            </select>
-          </div>
-          <div class="form-group"><label>Bentuk Pembayaran</label>
-            <select id="bentukZakat" class="form-control" onchange="kalkulasiZakat()" required>
-              <option value="Uang">Uang (Rp)</option>
-              <option value="Beras">Beras (Kg)</option>
-            </select>
-          </div>
-          <div class="form-group" id="grupJumlahJiwa"><label>Jumlah Jiwa (Tanggungan)</label><input type="number" id="jumlahJiwa" class="form-control" min="1" value="1" oninput="generateRincianNama(); kalkulasiZakat();"></div>
-          <div id="containerRincian" class="rincian-container">
-            <label style="color:var(--primary); font-weight:800; font-size:.8rem;">Rincian Nama Anggota Keluarga</label>
-            <div id="listRincian"></div>
-          </div>
-          <div class="form-group"><label>Total Dibayar (Otomatis)</label><input type="text" id="totalDibayar" class="form-control" required><small style="color:var(--text-light);" id="hintHitung">Hasil hitung otomatis dari sheet konfigurasi.</small></div>
-          <button type="submit" class="btn-submit" id="btnSubmitZakat">Simpan &amp; Kirim Resi WA</button>
-        </form>
+        <div class="list-cards" id="adminTabelTersalurkan"><div class="empty-hint">Belum ada data penyaluran.</div></div>
       </div>
     </div>
 
@@ -211,15 +158,7 @@
           <h3 style="color:var(--primary); margin:0;"><i class="fa-solid fa-list-check"></i> Daftar Mustahik</h3>
           <button id="btnRefreshMustahik" type="button" onclick="muatTabelMustahik()" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700;"><i class="fa-solid fa-arrows-rotate"></i></button>
         </div>
-        <div style="overflow-x:auto;">
-          <table style="width:100%; border-collapse:collapse; font-size:14px; min-width:520px;">
-            <thead><tr style="background:#f8fafc; text-align:left;">
-              <th style="padding:10px;">No</th><th style="padding:10px;">Nama</th><th style="padding:10px;">Alamat</th>
-              <th style="padding:10px; text-align:right;">Jatah</th><th style="padding:10px; text-align:center;">Status</th><th style="padding:10px; text-align:center;">Aksi</th>
-            </tr></thead>
-            <tbody id="bodyTabelMustahik"><tr><td colspan="6" class="text-center" style="padding:20px; color:#64748b;">⏳ Memuat data...</td></tr></tbody>
-          </table>
-        </div>
+        <div class="list-cards" id="bodyTabelMustahik"><div class="empty-hint">⏳ Memuat data...</div></div>
       </div>
     </div>
 
@@ -253,14 +192,7 @@
           <h3 style="color:var(--primary); margin:0;"><i class="fa-solid fa-cart-shopping"></i> Riwayat Pengeluaran</h3>
           <button id="btnRefreshBelanja" type="button" onclick="muatTabelBelanja()" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700;"><i class="fa-solid fa-arrows-rotate"></i></button>
         </div>
-        <div style="overflow-x:auto;">
-          <table style="width:100%; border-collapse:collapse; font-size:14px; min-width:520px;">
-            <thead><tr style="background:#f8fafc; text-align:left;">
-              <th style="padding:10px;">Tanggal</th><th style="padding:10px; text-align:right;">Uang</th><th style="padding:10px; text-align:right;">Beras</th><th style="padding:10px;">Keterangan</th><th style="padding:10px; text-align:center;">Struk</th>
-            </tr></thead>
-            <tbody id="bodyTabelBelanja"><tr><td colspan="5" class="text-center" style="padding:20px; color:#64748b;">⏳ Memuat riwayat...</td></tr></tbody>
-          </table>
-        </div>
+        <div class="list-cards" id="bodyTabelBelanja"><div class="empty-hint">⏳ Memuat riwayat...</div></div>
       </div>
     </div>
 
@@ -307,11 +239,49 @@
 
     <!-- ===== BOTTOM TAB BAR ===== -->
     <div class="nav-tabs">
-      <button class="tab-btn" onclick="bukaTab('tabBeranda', this)"><i class="fa-solid fa-house"></i>Beranda</button>
+      <button class="tab-btn active" id="btnTabBeranda" onclick="bukaTab('tabBeranda', this)"><i class="fa-solid fa-house"></i>Beranda</button>
       <button class="tab-btn" onclick="bukaTab('tabPenerima', this)"><i class="fa-solid fa-users"></i>Mustahik</button>
-      <button class="tab-btn fab active" id="btnTabCatat" onclick="bukaTab('tabCatat', this)"><i class="fa-solid fa-plus"></i>Catat</button>
+      <button class="tab-btn fab" id="btnTabCatat" onclick="bukaCatat()"><i class="fa-solid fa-plus"></i>Catat</button>
       <button class="tab-btn" onclick="bukaTab('tabBelanja', this)"><i class="fa-solid fa-cart-shopping"></i>Belanja</button>
       <button class="tab-btn" onclick="bukaTab('tabPengaturan', this)"><i class="fa-solid fa-gear"></i>Atur</button>
+    </div>
+  </div>
+
+  <!-- ===== LAYAR CATAT ZAKAT (overlay penuh) ===== -->
+  <div class="fullscreen" id="layarCatat">
+    <div class="fs-head">
+      <button class="fs-close" onclick="tutupCatat()"><i class="fa-solid fa-xmark"></i></button>
+      <b>Catat Zakat</b>
+    </div>
+    <div class="fs-body">
+      <div class="form-card">
+        <div id="alertZakat" class="alert"></div>
+        <form id="formZakat" onsubmit="submitZakat(event)">
+          <div class="form-group"><label>Nama Penyetor (KK)</label><input type="text" id="namaKK" class="form-control" required placeholder="Cth: Edi Susilo"></div>
+          <div class="form-group"><label>No. WhatsApp (awalan 08 / 628)</label><input type="text" id="noWa" class="form-control" required placeholder="Cth: 08123456789"></div>
+          <div class="form-group"><label>Jenis Zakat</label>
+            <select id="jenisZakat" class="form-control" onchange="kalkulasiZakat()" required>
+              <option value="Zakat Fitrah">Zakat Fitrah</option>
+              <option value="Zakat Mal">Zakat Mal</option>
+              <option value="Fidyah">Fidyah</option>
+              <option value="Infaq">Infaq / Sedekah</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Bentuk Pembayaran</label>
+            <select id="bentukZakat" class="form-control" onchange="kalkulasiZakat()" required>
+              <option value="Uang">Uang (Rp)</option>
+              <option value="Beras">Beras (Kg)</option>
+            </select>
+          </div>
+          <div class="form-group" id="grupJumlahJiwa"><label>Jumlah Jiwa (Tanggungan)</label><input type="number" id="jumlahJiwa" class="form-control" min="1" value="1" oninput="generateRincianNama(); kalkulasiZakat();"></div>
+          <div id="containerRincian" class="rincian-container">
+            <label style="color:var(--primary); font-weight:800; font-size:.8rem;">Rincian Nama Anggota Keluarga</label>
+            <div id="listRincian"></div>
+          </div>
+          <div class="form-group"><label>Total Dibayar (Otomatis)</label><input type="text" id="totalDibayar" class="form-control" required><small style="color:var(--text-light);" id="hintHitung">Hasil hitung otomatis dari sheet konfigurasi.</small></div>
+          <button type="submit" class="btn-submit" id="btnSubmitZakat">Simpan &amp; Kirim Resi WA</button>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -327,9 +297,16 @@
     </div>
   </div>
 
+  <!-- ===== Bottom Sheet Detail (global) ===== -->
+  <div class="sheet-overlay" id="sheetOverlay" onclick="tutupSheet()"></div>
+  <div class="sheet" id="sheetDetail">
+    <div class="grip"></div>
+    <div id="sheetIsi"></div>
+  </div>
+
   <script src="app.js"></script>
 
-  <!-- Stepper tahun: menyetir dropdown tersembunyi (app.js tak berubah) -->
+  <!-- Stepper tahun -->
   <script>
     function stepYear(which, dir){
       var sel = document.getElementById(which === 'pub' ? 'pilihTahun' : 'pilihTahunPanitia');
@@ -363,5 +340,6 @@
 
 </body>
 </html>
+
 
 
