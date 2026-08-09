@@ -73,6 +73,10 @@ function ubahTahunPanitia() {
 
 function muatDataPublik() {
   var tahunDipilih = document.getElementById('pilihTahun').value;
+  if (window._publikSiap) {
+    Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Memuat data tahun ' + tahunDipilih, showConfirmButton: false, timer: 1500 });
+  }
+  window._publikSiap = true;
   document.getElementById('tabelMuzakki').innerHTML = '<div class="empty-hint">Memuat data...</div>';
   document.getElementById('tabelTersalurkan').innerHTML = '<div class="empty-hint">Memuat data...</div>';
 
@@ -1051,4 +1055,5 @@ function sensorNama(namaLengkap) {
   });
   return hasil.join(" ");
 }
+
 

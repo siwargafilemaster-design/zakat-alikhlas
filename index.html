@@ -69,22 +69,23 @@
       <div class="quote-section">
         <div class="quote-arab">خُذْ مِنْ أَمْوَالِهِمْ صَدَقَةً تُطَهِّرُهُمْ وَتُزَكِّيهِم بِهَا</div>
         <div class="ornament"><span></span><i>۞</i><span></span></div>
-        <div class="quote-arti">"Ambillah zakat dari sebagian harta mereka, dengan zakat itu kamu membersihkan dan mensucikan mereka." <br><b>(QS. At-Taubah: 103)</b></div>
+        <div class="quote-arti">"Ambillah zakat dari sebagian harta mereka, dengan zakat itu kamu membersihkan dan mensucikan mereka."</div>
+        <div class="quote-src">(QS. At-Taubah: 103)</div>
       </div>
 
       <div class="section-header">
         <h2><i class="fa-solid fa-users"></i> Muzakki</h2>
-        <div class="badge-count" id="valMuzakki">0 Jiwa</div>
+        <div class="badge-count badge-green" id="valMuzakki">0 Jiwa</div>
       </div>
       <input type="text" id="cariMuzakki" class="search-box" placeholder="🔍 Cari nama Anda di sini..." onkeyup="cariTabel('cariMuzakki', 'tabelMuzakki')">
-      <div class="list-cards" id="tabelMuzakki"><div class="empty-hint">Memuat data...</div></div>
+      <div class="list-house"><div class="list-scroll tema-green"><div class="list-cards" id="tabelMuzakki"><div class="empty-hint">Memuat data...</div></div></div></div>
 
       <div class="section-header">
         <h2><i class="fa-solid fa-hand-holding-heart"></i> Tersalurkan</h2>
-        <div class="badge-count" id="valTersalurkan">0 Kg</div>
+        <div class="badge-count badge-gold" id="valTersalurkan">0 Kg</div>
       </div>
       <input type="text" id="cariMustahik" class="search-box" placeholder="🔍 Cari nama penerima di sini..." onkeyup="cariTabel('cariMustahik', 'tabelTersalurkan')">
-      <div class="list-cards" id="tabelTersalurkan"><div class="empty-hint">Belum ada data penyaluran.</div></div>
+      <div class="list-house"><div class="list-scroll tema-gold"><div class="list-cards" id="tabelTersalurkan"><div class="empty-hint">Belum ada data penyaluran.</div></div></div></div>
     </div>
   </div>
 
@@ -119,11 +120,11 @@
 
         <div class="section-header"><h2><i class="fa-solid fa-users"></i> Riwayat Penerimaan</h2></div>
         <input type="text" id="cariAdminMuzakki" class="search-box" placeholder="🔍 Cari nama penyetor..." onkeyup="cariTabel('cariAdminMuzakki', 'adminTabelMuzakki')">
-        <div class="list-cards" id="adminTabelMuzakki"><div class="empty-hint">Memuat data...</div></div>
+        <div class="list-house"><div class="list-scroll tema-green"><div class="list-cards" id="adminTabelMuzakki"><div class="empty-hint">Memuat data...</div></div></div></div>
 
         <div class="section-header"><h2><i class="fa-solid fa-hand-holding-heart"></i> Riwayat Penyaluran</h2></div>
         <input type="text" id="cariAdminMustahik" class="search-box" placeholder="🔍 Cari nama penerima..." onkeyup="cariTabel('cariAdminMustahik', 'adminTabelTersalurkan')">
-        <div class="list-cards" id="adminTabelTersalurkan"><div class="empty-hint">Belum ada data penyaluran.</div></div>
+        <div class="list-house"><div class="list-scroll tema-gold"><div class="list-cards" id="adminTabelTersalurkan"><div class="empty-hint">Belum ada data penyaluran.</div></div></div></div>
       </div>
     </div>
 
@@ -158,7 +159,7 @@
           <h3 style="color:var(--primary); margin:0;"><i class="fa-solid fa-list-check"></i> Daftar Mustahik</h3>
           <button id="btnRefreshMustahik" type="button" onclick="muatTabelMustahik()" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700;"><i class="fa-solid fa-arrows-rotate"></i></button>
         </div>
-        <div class="list-cards" id="bodyTabelMustahik"><div class="empty-hint">⏳ Memuat data...</div></div>
+        <div class="list-house"><div class="list-scroll tema-green"><div class="list-cards" id="bodyTabelMustahik"><div class="empty-hint">⏳ Memuat data...</div></div></div></div>
       </div>
     </div>
 
@@ -192,7 +193,7 @@
           <h3 style="color:var(--primary); margin:0;"><i class="fa-solid fa-cart-shopping"></i> Riwayat Pengeluaran</h3>
           <button id="btnRefreshBelanja" type="button" onclick="muatTabelBelanja()" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700;"><i class="fa-solid fa-arrows-rotate"></i></button>
         </div>
-        <div class="list-cards" id="bodyTabelBelanja"><div class="empty-hint">⏳ Memuat riwayat...</div></div>
+        <div class="list-house"><div class="list-scroll tema-green"><div class="list-cards" id="bodyTabelBelanja"><div class="empty-hint">⏳ Memuat riwayat...</div></div></div></div>
       </div>
     </div>
 
@@ -340,6 +341,7 @@
 
 </body>
 </html>
+
 
 
 
