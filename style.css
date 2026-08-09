@@ -98,7 +98,7 @@ body{
 
 /* ---------- Kartu ayat + ornamen ---------- */
 .quote-section{margin:18px 0 30px; padding:24px 18px; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:20px; box-shadow:0 10px 30px -22px rgba(6,78,59,.4);}
-.quote-arab{font-family:'Amiri',serif; direction:rtl; font-size:1.55rem; color:var(--primary); line-height:1.7; font-weight:700; white-space:nowrap; overflow:hidden;}
+.quote-arab{font-family:'Amiri',serif; direction:rtl; font-size:clamp(1rem, 4.6vw, 1.55rem); color:var(--primary); line-height:2; font-weight:700; white-space:nowrap; padding-top:6px;}
 .ornament{display:flex; align-items:center; justify-content:center; gap:12px; margin:12px 0;}
 .ornament span{height:1px; width:46px; background:linear-gradient(90deg,transparent,var(--accent-deep));}
 .ornament span:last-child{background:linear-gradient(90deg,var(--accent-deep),transparent);}
@@ -193,7 +193,6 @@ select.form-control{appearance:none; background-image:url("data:image/svg+xml;ch
 }
 @media (max-width:768px){
   .hero-banner h1{font-size:1.25rem;}
-  .quote-arab{font-size:1.35rem;}
 }
 
 /* ============================================================
@@ -281,7 +280,6 @@ select.form-control{appearance:none; background-image:url("data:image/svg+xml;ch
 
 /* Tema HIJAU (Muzakki / Penerimaan) */
 .tema-green .avatar{background:#e7f5ee; color:var(--primary);}
-.tema-green .amt b{color:#11998e !important;}
 .tema-green .chev{color:#c2d2ca;}
 /* Tema EMAS (Tersalurkan / Penyaluran) */
 .tema-gold .avatar{background:#fdf1d6; color:#b45309;}
@@ -292,6 +290,7 @@ select.form-control{appearance:none; background-image:url("data:image/svg+xml;ch
 /* Badge selaras tema */
 .badge-green{background:linear-gradient(135deg,#34d399,#059669) !important; color:#04352a !important;}
 .badge-gold{background:linear-gradient(135deg,var(--accent),var(--accent-deep)) !important; color:#3d2c00 !important;}
+
 
 
 

@@ -109,7 +109,7 @@ function updateUIWarga(data) {
       var qty = row.bentuk === "Uang" ?
         new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(row.jumlah) :
         (row.jumlah.toString().replace('.', ',') + " Kg");
-      var warna = (row.jenis === "Zakat Fitrah") ? "#11998e" : "#2f80ed";
+      var warna = (row.jenis === "Infaq") ? "#2f80ed" : "#11998e";
       var subInfo = row.jenis + (row.jiwa > 0 ? " · " + row.jiwa + " jiwa" : "");
       return (
         '<div class="rowcard" onclick="bukaDetailMuzakki(' + i + ')">' +
@@ -702,7 +702,7 @@ function muatBerandaPanitia() {
           var qty = row.bentuk === "Uang" ?
             new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(row.jumlah) :
             (row.jumlah.toString().replace('.', ',') + " Kg");
-          var warna = (row.jenis === "Zakat Fitrah") ? "#11998e" : "#2f80ed";
+          var warna = (row.jenis === "Infaq") ? "#2f80ed" : "#11998e";
           var subInfo = row.jenis + (row.jiwa > 0 ? " · " + row.jiwa + " jiwa" : "");
           return (
             '<div class="rowcard" onclick="bukaDetailAdmMuzakki(' + i + ')">' +
@@ -1055,5 +1055,6 @@ function sensorNama(namaLengkap) {
   });
   return hasil.join(" ");
 }
+
 
 
