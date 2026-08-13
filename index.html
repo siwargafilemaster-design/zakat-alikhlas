@@ -21,16 +21,48 @@
 <body>
 
   <!-- ============================================================
-       HALAMAN MASJID (kerangka Phase 1 — kosong, tersembunyi dulu)
-       Phase 2 akan mengisinya: tanggal, waktu sholat, infaq, dst.
+       HALAMAN MASJID (beranda utama)
        ============================================================ -->
-  <div id="appMasjid" style="display:none;">
-    <!-- (kosong dulu) -->
+  <div id="appMasjid">
+    <div class="mj-nav">
+      <div class="mj-brand">
+        <img src="al-ikhlas.png" alt="Logo Al Ikhlas" class="mj-mark-img">
+        <div><b>Masjid Al Ikhlas</b><small>Griya Gamersi Lalung</small></div>
+      </div>
+    </div>
+
+    <div class="mj-screen">
+      <!-- Kartu tanggal -->
+      <div class="mj-datecard">
+        <svg class="mj-star" viewBox="0 0 100 100"><g fill="none" stroke="#fff" stroke-width="1.5"><rect x="18" y="18" width="64" height="64"/><rect x="18" y="18" width="64" height="64" transform="rotate(45 50 50)"/><circle cx="50" cy="50" r="26"/></g></svg>
+        <div class="mj-masehi" id="mjMasehi">—</div>
+        <div class="mj-hijri-id" id="mjHijriId">Memuat…</div>
+        <div class="mj-hijri-ar" id="mjHijriAr">—</div>
+      </div>
+
+      <!-- Banner sholat berikutnya -->
+      <div class="mj-next" id="mjNextBox" style="display:none;">
+        <div><div class="mj-lbl">Menuju waktu</div><div class="mj-nm" id="mjNextNama">—</div></div>
+        <div class="mj-cd"><div class="jam" id="mjNextJam">—</div><small id="mjNextSisa">—</small></div>
+      </div>
+
+      <!-- Strip waktu sholat (diisi oleh masjid.js) -->
+      <div class="mj-prayers" id="mjPrayers"><div class="mj-loading">Memuat waktu sholat…</div></div>
+
+      <!-- Tombol menuju modul Zakat -->
+      <button class="mj-module" onclick="bukaModulZakat()">
+        <div class="mic"><i class="fa-solid fa-hand-holding-heart"></i></div>
+        <div class="mt"><b>Aplikasi Zakat Fitrah</b><small>Catat, hitung &amp; pantau zakat</small></div>
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
   </div>
   
-  <!-- ===== Header ramping ===== -->
+  <!-- ===== MODUL ZAKAT (dibungkus agar bisa show/hide) ===== -->
+  <div id="appZakat" style="display:none;">
+
   <div class="navbar">
-    <div class="logo-title"><img src="al-ikhlas.png" alt="Logo Al Ikhlas" class="logo-img"> Zakat Al Ikhlas</div>
+    <button class="btn-ke-masjid" onclick="bukaBerandaMasjid()"><i class="fa-solid fa-chevron-left"></i> Aplikasi Masjid</button>
     <div>
       <button class="btn-login-nav" onclick="bukaModalLogin()" id="btnNavLogin"><i class="fa-solid fa-lock"></i> Login</button>
       <button class="btn-logout-nav" onclick="prosesLogout()" id="btnNavLogout" style="display:none;"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
@@ -311,6 +343,8 @@
   <div class="sheet" id="sheetDetail">
     <div class="grip"></div>
     <div id="sheetIsi"></div>
+  </div>
+
   </div>
 
   <script src="zakat.js"></script>
