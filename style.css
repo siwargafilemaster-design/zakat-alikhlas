@@ -333,6 +333,7 @@ select.form-control{appearance:none; background-image:url("data:image/svg+xml;ch
 .btn-ke-masjid{display:inline-flex; align-items:center; gap:7px; border:none; background:var(--primary); color:#fff; font-family:inherit; font-weight:700; font-size:.8rem; padding:9px 15px; border-radius:999px; cursor:pointer; transition:transform .15s ease, background-color .2s ease;}
 .btn-ke-masjid:hover{background:var(--secondary); transform:translateY(-1px);}
 .btn-ke-masjid:active{transform:scale(.96);}
+.logo-center{position:absolute; left:50%; transform:translateX(-50%); width:34px; height:34px; border-radius:11px; object-fit:cover;}
 
 
 
