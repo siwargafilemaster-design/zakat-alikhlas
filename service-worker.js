@@ -9,7 +9,7 @@
 
 // Naikkan angka versi ini setiap kali Anda mengubah file app.
 // Contoh: 'zakat-v1' -> 'zakat-v2'. Ini memaksa HP mengambil versi baru.
-const CACHE_NAME = 'zakat-v8';
+const CACHE_NAME = 'zakat-v9';
 
 // Daftar "kerangka" yang disimpan untuk dibuka cepat / offline.
 const APP_SHELL = [
