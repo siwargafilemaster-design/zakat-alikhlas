@@ -49,6 +49,20 @@
       <!-- Strip waktu sholat (diisi oleh masjid.js) -->
       <div class="mj-prayers" id="mjPrayers"><div class="mj-loading">Memuat waktu sholat…</div></div>
 
+      <!-- Infaq & Kas Masjid -->
+      <div class="mj-sec"><span class="mj-bar"></span><h3>Infaq &amp; Kas Masjid</h3></div>
+      <div class="mj-infaq">
+        <div class="mj-saldo-lbl">Saldo Kas Masjid</div>
+        <div class="mj-saldo" id="mjSaldo">Rp 0</div>
+        <div class="mj-ring">
+          <div class="r"><small>Saldo Awal</small><b id="mjSaldoAwal">—</b></div>
+          <div class="r in"><small>Masuk</small><b id="mjMasuk">—</b></div>
+          <div class="r out"><small>Keluar</small><b id="mjKeluar">—</b></div>
+        </div>
+      </div>
+      <div class="mj-ticker" id="mjTicker"><div class="mj-ticker-track">Memuat riwayat…</div></div>
+      <button class="mj-catat-kas" onclick="mjBukaFormKas()"><i class="fa-solid fa-plus"></i> Catat Kas (takmir)</button>
+
       <!-- Tombol menuju modul Zakat -->
       <button class="mj-module" onclick="bukaModulZakat()">
         <div class="mic"><i class="fa-solid fa-hand-holding-heart"></i></div>
@@ -346,6 +360,22 @@
     <div id="sheetIsi"></div>
   </div>
 
+  </div>
+
+  <!-- Form Catat Kas Masjid (Phase 3) -->
+  <div class="mj-form-ov" id="mjFormOv" onclick="mjTutupFormKas()"></div>
+  <div class="mj-form" id="mjForm">
+    <div class="mj-grip"></div>
+    <h4>Catat Transaksi Kas</h4>
+    <div class="mj-fld"><label>Jenis</label>
+      <select id="mjJenis">
+        <option value="masuk">Pemasukan (masuk)</option>
+        <option value="keluar">Pengeluaran (keluar)</option>
+      </select>
+    </div>
+    <div class="mj-fld"><label>Jumlah (Rp)</label><input type="number" id="mjJumlah" placeholder="Cth: 100000"></div>
+    <div class="mj-fld"><label>Keterangan</label><input type="text" id="mjKet" placeholder="Cth: Infaq Hamba Allah"></div>
+    <button class="mj-save" id="mjBtnSave" onclick="mjSubmitKas()">Simpan</button>
   </div>
 
   <script src="zakat.js"></script>

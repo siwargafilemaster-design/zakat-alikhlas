@@ -1,6 +1,7 @@
 // ==========================================================
 // masjid.js — Modul Info Masjid (Super-App Masjid Al Ikhlas)
 // Phase 2: Waktu Sholat & Tanggal.
+// Phase 3: Kas Masjid (saldo, ringkasan, running text, form catat).
 // ==========================================================
 
 // --- Konfigurasi lokasi (Lalung, Karanganyar) ---
@@ -25,13 +26,18 @@ let mjTimings = null;   // simpan waktu sholat untuk dipakai berulang (countdown
 const Masjid = {
   init() {
     mjMuatWaktuSholat();
-    // Perbarui penanda "sholat berikutnya" tiap 30 detik
+    mjMuatKas();                              // Phase 3
     setInterval(mjTandaiBerikutnya, 30000);
   }
 };
 
+// Format Rupiah (dipakai beberapa tempat)
+function mjRupiah(n) {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n || 0);
+}
+
 // ==========================================================
-// Ambil waktu sholat + tanggal dari Aladhan
+// WAKTU SHOLAT & TANGGAL (Phase 2)
 // ==========================================================
 async function mjMuatWaktuSholat() {
   const url = 'https://api.aladhan.com/v1/timings'
@@ -53,27 +59,19 @@ async function mjMuatWaktuSholat() {
   }
 }
 
-// ==========================================================
-// Tampilkan kartu tanggal (Masehi → Hijriah Indonesia → Hijriah Arab)
-// ==========================================================
 function mjTampilTanggal(data) {
   const h = data.date.hijri;
   const namaBulan = MJ_BULAN[h.month.en] || h.month.en;
-
   document.getElementById('mjMasehi').textContent = data.date.readable;
   document.getElementById('mjHijriId').textContent = h.day + ' ' + namaBulan + ' ' + h.year + ' H';
   document.getElementById('mjHijriAr').textContent = mjAngkaArab(h.day) + ' ' + h.month.ar + ' ' + mjAngkaArab(h.year) + ' هـ';
 }
 
-// Ubah angka Latin (1448) → angka Arab (١٤٤٨)
 function mjAngkaArab(angka) {
   const arab = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
   return String(angka).replace(/[0-9]/g, function(d){ return arab[d]; });
 }
 
-// ==========================================================
-// Tampilkan strip waktu sholat (Imsak + 5 waktu)
-// ==========================================================
 function mjTampilPrayers(t) {
   const daftar = [
     { nama: 'Imsak',   kunci: 'Imsak',   ikon: 'fa-mug-hot',          ims:true },
@@ -95,23 +93,14 @@ function mjTampilPrayers(t) {
   }).join('');
 }
 
-// Buang embel-embel " (WIB)" bila ada
-function mjBersihkanJam(str) {
-  return String(str).trim().split(' ')[0];
-}
-
-// "HH:MM" → menit sejak tengah malam (untuk perbandingan waktu)
+function mjBersihkanJam(str) { return String(str).trim().split(' ')[0]; }
 function mjKeMenit(jam) {
   const b = mjBersihkanJam(jam).split(':');
   return parseInt(b[0], 10) * 60 + parseInt(b[1], 10);
 }
 
-// ==========================================================
-// Tandai waktu sholat berikutnya + hitung mundur
-// ==========================================================
 function mjTandaiBerikutnya() {
   if (!mjTimings) return;
-
   const urut = [
     { nama: 'Subuh',   kunci: 'Fajr' },
     { nama: 'Dzuhur',  kunci: 'Dhuhr' },
@@ -119,7 +108,6 @@ function mjTandaiBerikutnya() {
     { nama: 'Maghrib', kunci: 'Maghrib' },
     { nama: 'Isya',    kunci: 'Isha' }
   ];
-
   const now = new Date();
   const menitSekarang = now.getHours() * 60 + now.getMinutes();
 
@@ -127,16 +115,13 @@ function mjTandaiBerikutnya() {
   for (let i = 0; i < urut.length; i++) {
     if (mjKeMenit(mjTimings[urut[i].kunci]) > menitSekarang) { berikutnya = urut[i]; break; }
   }
-
   let lintasHari = false;
   if (!berikutnya) { berikutnya = urut[0]; lintasHari = true; }
 
-  // Bersihkan tanda lama, pasang tanda baru
   document.querySelectorAll('.mj-prayer').forEach(function(el){ el.classList.remove('now'); });
   const target = document.querySelector('.waktu-' + berikutnya.kunci);
   if (target) target.classList.add('now');
 
-  // Sisa waktu
   const menitSholat = mjKeMenit(mjTimings[berikutnya.kunci]);
   let selisih = menitSholat - menitSekarang;
   if (lintasHari) selisih = (24 * 60 - menitSekarang) + menitSholat;
@@ -152,8 +137,75 @@ function mjTandaiBerikutnya() {
 }
 
 // ==========================================================
+// KAS MASJID (Phase 3)
+// Memakai panggilAPI() milik zakat.js (fungsi global, sudah dimuat lebih dulu).
+// ==========================================================
+async function mjMuatKas() {
+  try {
+    const kas = await panggilAPI('getKasMasjid');
+    document.getElementById('mjSaldo').textContent = mjRupiah(kas.saldoTotal);
+    document.getElementById('mjSaldoAwal').textContent = mjRupiah(kas.saldoAwalBulan);
+    document.getElementById('mjMasuk').textContent = '+' + mjRupiah(kas.bulanMasuk);
+    document.getElementById('mjKeluar').textContent = '−' + mjRupiah(kas.bulanKeluar);
+    mjRenderTicker(kas.riwayat);
+  } catch (error) {
+    const s = document.getElementById('mjSaldo');
+    if (s) s.textContent = 'Gagal memuat';
+  }
+}
+
+// Bangun running text (teks berjalan) dari daftar transaksi bulan ini.
+// Isi digandakan 2x agar animasi berulang mulus (tanpa "sambungan").
+function mjRenderTicker(riwayat) {
+  const wadah = document.getElementById('mjTicker');
+  if (!riwayat || riwayat.length === 0) {
+    wadah.innerHTML = '<div class="mj-ticker-track" style="padding:0 14px;">Belum ada transaksi bulan ini.</div>';
+    return;
+  }
+  const nf = new Intl.NumberFormat('id-ID');
+  const satu = riwayat.map(function(r) {
+    const tanda = (r.jenis === 'masuk') ? '+' : '−';
+    const kelas = (r.jenis === 'masuk') ? 'in' : 'out';
+    return '<span class="mj-ti ' + kelas + '">' + r.keterangan + ' ' + tanda + nf.format(r.jumlah) + '</span>'
+         + '<span class="mj-tdot">•</span>';
+  }).join('');
+  wadah.innerHTML = '<div class="mj-ticker-track">' + satu + satu + '</div>';
+}
+
+// --- Form catat kas (sementara terbuka; dikunci login takmir di Phase 4) ---
+function mjBukaFormKas() {
+  document.getElementById('mjFormOv').classList.add('on');
+  document.getElementById('mjForm').classList.add('on');
+}
+function mjTutupFormKas() {
+  document.getElementById('mjFormOv').classList.remove('on');
+  document.getElementById('mjForm').classList.remove('on');
+}
+async function mjSubmitKas() {
+  const jenis = document.getElementById('mjJenis').value;
+  const jumlah = document.getElementById('mjJumlah').value;
+  const keterangan = document.getElementById('mjKet').value;
+  if (!jumlah || !keterangan) {
+    Swal.fire({ toast:true, position:'top-end', icon:'warning', title:'Jumlah & keterangan wajib diisi', showConfirmButton:false, timer:2000 });
+    return;
+  }
+  const btn = document.getElementById('mjBtnSave');
+  btn.disabled = true; btn.textContent = 'Menyimpan…';
+  try {
+    await panggilAPI('simpanTransaksiKas', { jenis: jenis, jumlah: jumlah, keterangan: keterangan });
+    mjTutupFormKas();
+    document.getElementById('mjJumlah').value = '';
+    document.getElementById('mjKet').value = '';
+    mjMuatKas();  // segarkan saldo & running text
+    Swal.fire({ toast:true, position:'top-end', icon:'success', title:'Transaksi tersimpan', showConfirmButton:false, timer:2000 });
+  } catch (error) {
+    Swal.fire({ icon:'error', title:'Gagal', text: error.message });
+  }
+  btn.disabled = false; btn.textContent = 'Simpan';
+}
+
+// ==========================================================
 // NAVIGASI antar modul (masjid <-> zakat)
-// Versi dasar Phase 2. Deep link #zakat & integrasi penuh menyusul di Phase 7.
 // ==========================================================
 function bukaModulZakat() {
   document.getElementById('appMasjid').style.display = 'none';
@@ -173,4 +225,5 @@ function bukaBerandaMasjid() {
 window.addEventListener('load', function () {
   Masjid.init();
 });
+
 

@@ -335,8 +335,42 @@ select.form-control{appearance:none; background-image:url("data:image/svg+xml;ch
 .btn-ke-masjid:active{transform:scale(.96);}
 .logo-center{position:absolute; left:50%; transform:translateX(-50%); width:34px; height:34px; border-radius:11px; object-fit:cover;}
 
+/* ============================================================
+   PHASE 3 — Kas Masjid
+   ============================================================ */
+.mj-sec{display:flex; align-items:center; gap:9px; margin:22px 2px 12px;}
+.mj-sec .mj-bar{width:4px; height:17px; border-radius:99px; background:linear-gradient(var(--accent),var(--accent-deep));}
+.mj-sec h3{font-size:1rem; font-weight:800; color:var(--primary);}
 
+.mj-infaq{background:#fff; border:1px solid var(--line); border-radius:20px; padding:18px; box-shadow:0 12px 34px -22px rgba(6,78,59,.5);}
+.mj-saldo-lbl{font-size:.66rem; color:var(--ink-soft); font-weight:700; text-transform:uppercase; letter-spacing:.04em;}
+.mj-saldo{font-size:1.7rem; font-weight:800; color:var(--primary); letter-spacing:-.02em; margin-top:2px;}
+.mj-ring{margin-top:14px; padding-top:14px; border-top:1px solid var(--line); display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; text-align:center;}
+.mj-ring .r small{display:block; font-size:.6rem; color:var(--ink-soft); font-weight:700; text-transform:uppercase;}
+.mj-ring .r b{font-size:.86rem; font-weight:800; color:var(--primary);}
+.mj-ring .r.in b{color:var(--secondary);}
+.mj-ring .r.out b{color:#ef4444;}
 
+.mj-ticker{overflow:hidden; background:linear-gradient(90deg,#053a2c,#0b6b4f); border-radius:12px; padding:10px 0; margin-top:8px;}
+.mj-ticker-track{display:inline-flex; white-space:nowrap; animation:mjTick 24s linear infinite; color:#fff; font-size:.84rem; font-weight:700; padding-left:10px;}
+.mj-ticker:hover .mj-ticker-track{animation-play-state:paused;}
+@keyframes mjTick{from{transform:translateX(0);} to{transform:translateX(-50%);}}
+.mj-ti{padding:0 2px;}
+.mj-ti.in{color:#6ee7b7;} .mj-ti.out{color:#fca5a5;}
+.mj-tdot{color:rgba(255,255,255,.4); margin:0 14px;}
 
+/* Tombol catat kas + form */
+.mj-catat-kas{width:100%; margin-top:12px; padding:12px; background:#eaf3ee; color:var(--primary); border:1px dashed #b6d8c8; border-radius:13px; font-family:inherit; font-weight:800; font-size:.85rem; cursor:pointer;}
+.mj-form-ov{position:fixed; inset:0; background:rgba(6,26,20,.5); z-index:1400; display:none;}
+.mj-form-ov.on{display:block;}
+.mj-form{position:fixed; left:0; right:0; bottom:0; z-index:1500; background:#fff; border-radius:24px 24px 0 0; padding:16px 18px calc(24px + env(safe-area-inset-bottom)); max-width:900px; margin:0 auto; transform:translateY(100%); transition:transform .3s cubic-bezier(.2,.8,.2,1); box-shadow:0 -12px 40px -12px rgba(6,78,59,.5);}
+.mj-form.on{transform:translateY(0);}
+.mj-form .mj-grip{width:44px; height:5px; border-radius:99px; background:#d8e4dd; margin:0 auto 14px;}
+.mj-form h4{color:var(--primary); margin-bottom:14px;}
+.mj-fld{margin-bottom:11px;}
+.mj-fld label{display:block; font-size:.72rem; font-weight:700; color:var(--ink-soft); margin-bottom:4px;}
+.mj-fld select,.mj-fld input{width:100%; padding:11px 12px; border:1.5px solid var(--line); border-radius:11px; font-family:inherit; font-size:.95rem; background:#fff;}
+.mj-save{width:100%; padding:13px; background:var(--secondary); color:#fff; border:none; border-radius:13px; font-family:inherit; font-weight:800; font-size:1rem; cursor:pointer; margin-top:6px;}
+.mj-save:disabled{opacity:.6;}
 
 
