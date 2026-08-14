@@ -29,6 +29,7 @@
         <img src="al-ikhlas.png" alt="Logo Al Ikhlas" class="mj-mark-img">
         <div><b>Masjid Al Ikhlas</b><small>Griya Gamersi Lalung</small></div>
       </div>
+      <button class="mj-login-btn" id="mjLoginBtn" onclick="mjToggleTakmir()"><i class="fa-solid fa-user-shield"></i> Takmir</button>
     </div>
 
     <div class="mj-screen">
@@ -61,7 +62,7 @@
         </div>
       </div>
       <div class="mj-ticker" id="mjTicker"><div class="mj-ticker-track">Memuat riwayat…</div></div>
-      <button class="mj-catat-kas" onclick="mjBukaFormKas()"><i class="fa-solid fa-plus"></i> Catat Kas (takmir)</button>
+      <button class="mj-catat-kas" id="mjBtnCatatKas" style="display:none;" onclick="mjBukaFormKas()"><i class="fa-solid fa-plus"></i> Catat Kas</button>
 
       <!-- Tombol menuju modul Zakat -->
       <button class="mj-module" onclick="bukaModulZakat()">

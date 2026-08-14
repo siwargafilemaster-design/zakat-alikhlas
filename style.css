@@ -373,4 +373,6 @@ select.form-control{appearance:none; background-image:url("data:image/svg+xml;ch
 .mj-save{width:100%; padding:13px; background:var(--secondary); color:#fff; border:none; border-radius:13px; font-family:inherit; font-weight:800; font-size:1rem; cursor:pointer; margin-top:6px;}
 .mj-save:disabled{opacity:.6;}
 
-
+/* Tombol login takmir di navbar masjid */
+.mj-login-btn{margin-left:auto; display:inline-flex; align-items:center; gap:7px; border:none; background:var(--primary); color:#fff; font-family:inherit; font-weight:700; font-size:.76rem; padding:8px 14px; border-radius:999px; cursor:pointer;}
+.mj-login-btn:active{transform:scale(.96);}
