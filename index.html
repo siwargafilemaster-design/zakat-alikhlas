@@ -62,7 +62,9 @@
         </div>
       </div>
       <div class="mj-ticker" id="mjTicker"><div class="mj-ticker-track">Memuat riwayat…</div></div>
-      <button class="mj-catat-kas" id="mjBtnCatatKas" style="display:none;" onclick="mjBukaFormKas()"><i class="fa-solid fa-plus"></i> Catat Kas</button>
+      <button class="mj-catat-kas mj-takmir-only" id="mjBtnCatatKas" style="display:none;" onclick="mjBukaFormKas()"><i class="fa-solid fa-plus"></i> Catat Kas</button>
+      <button class="mj-catat-kas mj-takmir-only" style="display:none;" onclick="mjBukaPanel('mjPanelPetugas')"><i class="fa-solid fa-users"></i> Daftar Petugas</button>
+      <button class="mj-catat-kas mj-takmir-only" style="display:none;" onclick="mjBukaPanel('mjPanelJadwal')"><i class="fa-solid fa-calendar-days"></i> Jadwal Ramadhan</button>
 
       <!-- Tombol menuju modul Zakat -->
       <button class="mj-module" onclick="bukaModulZakat()">
@@ -379,6 +381,29 @@
     <button class="mj-save" id="mjBtnSave" onclick="mjSubmitKas()">Simpan</button>
   </div>
 
+  <!-- Panel Daftar Petugas (Phase 5) -->
+  <div class="mj-panel" id="mjPanelPetugas">
+    <div class="mj-panel-head">
+      <button class="mj-panel-back" onclick="mjTutupPanel('mjPanelPetugas')"><i class="fa-solid fa-arrow-left"></i></button>
+      <b>Daftar Petugas</b>
+    </div>
+    <div class="mj-panel-body" id="mjPetugasBody"></div>
+  </div>
+
+  <!-- Panel Jadwal Ramadhan (Phase 5) -->
+  <div class="mj-panel" id="mjPanelJadwal">
+    <div class="mj-panel-head">
+      <button class="mj-panel-back" onclick="mjTutupPanel('mjPanelJadwal')"><i class="fa-solid fa-arrow-left"></i></button>
+      <b>Jadwal Ramadhan</b>
+    </div>
+    <div class="mj-panel-body" id="mjJadwalBody"></div>
+  </div>
+
+  <!-- Bottom sheet edit satu malam (Phase 5) -->
+  <div class="mj-form-ov" id="mjSheetMalamOv" onclick="mjTutupSheetMalam()"></div>
+  <div class="mj-form" id="mjSheetMalam"></div>
+
+  
   <script src="zakat.js"></script>
   <script src="masjid.js"></script>
 
