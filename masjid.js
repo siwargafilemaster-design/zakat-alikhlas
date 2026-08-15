@@ -81,6 +81,11 @@ function mjTanggalISO(d) {
   const b = ('0'+(d.getMonth()+1)).slice(-2), t = ('0'+d.getDate()).slice(-2);
   return d.getFullYear() + '-' + b + '-' + t;
 }
+// Ubah teks "YYYY-MM-DD" menjadi tanggal LOKAL (hindari geser zona waktu UTC).
+function mjParseTanggal(str) {
+  const p = String(str).split('-');
+  return new Date(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10));
+}
 // Bandingkan hanya bagian tanggal (buang jam)
 function mjHariSaja(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 
@@ -317,11 +322,13 @@ async function mjMuatJadwal() {
     mjRenderJadwal();
   } catch (error) { body.innerHTML = '<div class="mj-loading" style="color:#ef4444;">Gagal memuat: '+error.message+'</div>'; }
 }
-// Tanggal Masehi malam ke-n (butuh mjRamadhanMulai dari Phase 6)
+// Tanggal Masehi tarawih malam ke-n.
+// Konvensi: malam ke-1 = malam SEBELUM puasa pertama (tarawih perdana),
+// karena hari Islam mulai maghrib. Jadi malam ke-n = (1 Ramadhan) + (n-2).
 function mjTanggalMalam(n) {
   if (!mjRamadhanMulai) return null;
   const d = new Date(mjRamadhanMulai);
-  d.setDate(d.getDate() + (n - 1));
+  d.setDate(d.getDate() + (n - 2));
   return d;
 }
 function mjRenderJadwal() {
@@ -402,18 +409,19 @@ async function mjTanggalMulaiRamadhan() {
   try {
     const kal = await panggilAPI('getKalender');
     if (kal.ramadhan && Number(kal.ramadhan.tahun) === Number(tahun) && kal.ramadhan.tanggal) {
-      return new Date(kal.ramadhan.tanggal);   // "YYYY-MM-DD"
+      return mjParseTanggal(kal.ramadhan.tanggal);   // "YYYY-MM-DD" → tanggal lokal
     }
   } catch (e) {}
   // 2) Default aman: Aladhan
   return await mjRekomendasiAladhan(9);
 }
 
-// Malam ke-berapa hari ini (1-30), atau null bila di luar Ramadhan.
+// Tarawih malam ke-berapa yang berlangsung MALAM INI (1-30), atau null di luar Ramadhan.
+// Konvensi malam ke-1 = malam sebelum puasa pertama → malam = (hari ini − 1 Ramadhan) + 2.
 function mjMalamKe() {
   if (!mjRamadhanMulai) return null;
   const selisih = Math.round((mjHariSaja(new Date()) - mjHariSaja(mjRamadhanMulai)) / 86400000);
-  const malam = selisih + 1;
+  const malam = selisih + 2;
   return (malam >= 1 && malam <= 30) ? malam : null;
 }
 
@@ -463,7 +471,7 @@ async function mjMuatKalender() {
     html += '<div class="mj-kal-card">'
           + '<div class="mj-kal-nama">'+ev.nama+' '+tahun+' H</div>'
           + '<div class="mj-kal-row"><span>Rekomendasi Aladhan</span><b>'+(rec?mjFormatTanggalID(rec):'—')+'</b></div>'
-          + '<div class="mj-kal-row"><span>Dikonfirmasi</span><b class="'+(conf?'ok':'no')+'">'+(conf?mjFormatTanggalID(new Date(conf)):'Belum')+'</b></div>'
+          + '<div class="mj-kal-row"><span>Dikonfirmasi</span><b class="'+(conf?'ok':'no')+'">'+(conf?mjFormatTanggalID(mjParseTanggal(conf)):'Belum')+'</b></div>'
           + '<button class="mj-kal-btn" onclick="mjKonfirmasiTanggal(\''+ev.key+'\','+ev.bulan+')"><i class="fa-solid fa-check"></i> Konfirmasi Tanggal</button>'
           + '</div>';
   }
@@ -516,6 +524,7 @@ function bukaModulZakat() { document.getElementById('appMasjid').style.display='
 function bukaBerandaMasjid() { document.getElementById('appZakat').style.display='none'; document.getElementById('appMasjid').style.display='block'; window.scrollTo(0,0); }
 
 window.addEventListener('load', function () { Masjid.init(); });
+
 
 
 
