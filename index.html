@@ -50,6 +50,9 @@
       <!-- Strip waktu sholat (diisi oleh masjid.js) -->
       <div class="mj-prayers" id="mjPrayers"><div class="mj-loading">Memuat waktu sholat…</div></div>
 
+      <!-- Blok Ramadhan (muncul otomatis saat bulan Ramadhan) -->
+      <div id="mjBlokRamadhan" style="display:none;"></div>
+
       <!-- Infaq & Kas Masjid -->
       <div class="mj-sec"><span class="mj-bar"></span><h3>Infaq &amp; Kas Masjid</h3></div>
       <div class="mj-infaq">
@@ -65,6 +68,7 @@
       <button class="mj-catat-kas mj-takmir-only" id="mjBtnCatatKas" style="display:none;" onclick="mjBukaFormKas()"><i class="fa-solid fa-plus"></i> Catat Kas</button>
       <button class="mj-catat-kas mj-takmir-only" style="display:none;" onclick="mjBukaPanel('mjPanelPetugas')"><i class="fa-solid fa-users"></i> Daftar Petugas</button>
       <button class="mj-catat-kas mj-takmir-only" style="display:none;" onclick="mjBukaPanel('mjPanelJadwal')"><i class="fa-solid fa-calendar-days"></i> Jadwal Ramadhan</button>
+      <button class="mj-catat-kas mj-takmir-only" style="display:none;" onclick="mjBukaPanel('mjPanelKalender')"><i class="fa-solid fa-calendar-check"></i> Konfirmasi Kalender</button>
 
       <!-- Tombol menuju modul Zakat -->
       <button class="mj-module" onclick="bukaModulZakat()">
@@ -92,7 +96,7 @@
        ============================================================ -->
   <div id="viewPublik" class="view-section active">
 
-    <div class="year-step">
+    <div class="year-step"
       <button type="button" onclick="stepYear('pub',-1)"><i class="fa-solid fa-chevron-left"></i></button>
       <div class="yr" id="yrPublik">—</div>
       <button type="button" onclick="stepYear('pub',1)"><i class="fa-solid fa-chevron-right"></i></button>
@@ -403,6 +407,15 @@
   <div class="mj-form-ov" id="mjSheetMalamOv" onclick="mjTutupSheetMalam()"></div>
   <div class="mj-form" id="mjSheetMalam"></div>
 
+  <!-- Panel Kalender (Phase 6) -->
+  <div class="mj-panel" id="mjPanelKalender">
+    <div class="mj-panel-head">
+      <button class="mj-panel-back" onclick="mjTutupPanel('mjPanelKalender')"><i class="fa-solid fa-arrow-left"></i></button>
+      <b>Konfirmasi Kalender</b>
+    </div>
+    <div class="mj-panel-body" id="mjKalenderBody"></div>
+  </div>
+  
   
   <script src="zakat.js"></script>
   <script src="masjid.js"></script>

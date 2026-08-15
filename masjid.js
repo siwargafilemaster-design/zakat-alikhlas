@@ -1,29 +1,26 @@
 // ==========================================================
 // masjid.js — Modul Info Masjid (Super-App Masjid Al Ikhlas)
-// Phase 2: Waktu Sholat & Tanggal.
-// Phase 3: Kas Masjid.
-// Phase 4: Login Takmir + ubah PIN.
-// Phase 5: Daftar Petugas + Jadwal Ramadhan (30 malam).
+// Phase 2: Waktu Sholat & Tanggal.   Phase 3: Kas Masjid.
+// Phase 4: Login Takmir + ubah PIN.  Phase 5: Petugas + Jadwal Ramadhan.
+// Phase 6: Mode Ramadhan + Kalender + Pop-up Isbat.
 // ==========================================================
 
-// --- Konfigurasi lokasi (Lalung, Karanganyar) ---
 const MJ_LAT = -7.6;
 const MJ_LON = 110.95;
 const MJ_METODE = 20;   // 20 = KEMENAG Indonesia
 
-// Nama bulan Hijriah (Indonesia), dipetakan dari NOMOR bulan (1-12).
 const MJ_BULAN = {
   1:"Muharram",     2:"Safar",         3:"Rabiul Awal",   4:"Rabiul Akhir",
   5:"Jumadil Awal", 6:"Jumadil Akhir", 7:"Rajab",         8:"Sya'ban",
   9:"Ramadhan",    10:"Syawal",       11:"Dzulqa'dah",   12:"Dzulhijjah"
 };
 
+const MJ_HARI  = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const MJ_BLNID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
 const MJ_TICKER_PEMBUKA = "📢 Informasi Saldo Kas Masjid Al Ikhlas";
 
-// ==========================================================
-// DAFTAR QUOTE (berganti otomatis tiap hari)
-// Cara edit: tambah / hapus / ubah baris. Satu baris = satu quote.
-// ==========================================================
+// ===== DAFTAR QUOTE (berganti tiap hari) — edit bebas, 1 baris = 1 quote =====
 const MJ_QUOTES = [
   "Perumpamaan orang yang menginfakkan hartanya di jalan Allah seperti sebutir biji yang menumbuhkan tujuh tangkai (QS. Al-Baqarah: 261)",
   "Barangsiapa membangun masjid karena Allah, Allah akan membangunkan untuknya yang serupa di surga (HR. Bukhari & Muslim)",
@@ -58,32 +55,40 @@ const MJ_QUOTES = [
 ];
 
 let mjTimings = null;
-let mjHijriYear = null, mjHijriMonth = null;   // untuk hitung tahun Ramadhan
-let mjPetugas = null;                          // cache daftar petugas
-let mjJadwalData = {};                         // cache jadwal per malam
+let mjHijriYear = null, mjHijriMonth = null;
+let mjPetugas = null;
+let mjJadwalData = {};
+let mjRamadhanMulai = null;   // Date awal 1 Ramadhan (konfirmasi takmir / Aladhan)
 
 // ==========================================================
-// Titik masuk modul masjid
-// ==========================================================
 const Masjid = {
-  init() {
-    mjMuatWaktuSholat();
+  async init() {
+    await mjMuatWaktuSholat();       // set mjHijriYear/Month dulu
     mjMuatKas();
     mjTerapkanModeTakmir();
+    await mjSiapkanRamadhan();        // Phase 6: mode Ramadhan + pop-up
     setInterval(mjTandaiBerikutnya, 30000);
   }
 };
 
 function mjRupiah(n) {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n || 0);
+  return new Intl.NumberFormat('id-ID', { style:'currency', currency:'IDR', maximumFractionDigits:0 }).format(n || 0);
 }
+function mjFormatTanggalID(d) {
+  return MJ_HARI[d.getDay()] + ', ' + d.getDate() + ' ' + MJ_BLNID[d.getMonth()] + ' ' + d.getFullYear();
+}
+function mjTanggalISO(d) {
+  const b = ('0'+(d.getMonth()+1)).slice(-2), t = ('0'+d.getDate()).slice(-2);
+  return d.getFullYear() + '-' + b + '-' + t;
+}
+// Bandingkan hanya bagian tanggal (buang jam)
+function mjHariSaja(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 
 // ==========================================================
 // WAKTU SHOLAT & TANGGAL (Phase 2)
 // ==========================================================
 async function mjMuatWaktuSholat() {
-  const url = 'https://api.aladhan.com/v1/timings'
-            + '?latitude='  + MJ_LAT + '&longitude=' + MJ_LON + '&method=' + MJ_METODE;
+  const url = 'https://api.aladhan.com/v1/timings?latitude='+MJ_LAT+'&longitude='+MJ_LON+'&method='+MJ_METODE;
   try {
     const respons = await fetch(url);
     const json = await respons.json();
@@ -94,7 +99,7 @@ async function mjMuatWaktuSholat() {
     mjTandaiBerikutnya();
   } catch (error) {
     const p = document.getElementById('mjPrayers');
-    if (p) p.innerHTML = '<div class="mj-loading" style="color:#ef4444;">Gagal memuat waktu sholat: ' + error.message + '</div>';
+    if (p) p.innerHTML = '<div class="mj-loading" style="color:#ef4444;">Gagal memuat waktu sholat: '+error.message+'</div>';
   }
 }
 
@@ -108,7 +113,6 @@ function mjTampilTanggal(data) {
   document.getElementById('mjHijriAr').textContent = mjAngkaArab(h.day) + ' ' + h.month.ar + ' ' + mjAngkaArab(h.year) + ' هـ';
 }
 
-// Tahun Hijriah Ramadhan terdekat (untuk label kartu jadwal)
 function mjTahunRamadhan() {
   if (!mjHijriYear) return '';
   return (mjHijriMonth <= 9) ? mjHijriYear : (mjHijriYear + 1);
@@ -121,25 +125,22 @@ function mjAngkaArab(angka) {
 
 function mjTampilPrayers(t) {
   const daftar = [
-    { nama:'Imsak',  kunci:'Imsak',  ikon:'fa-mug-hot', ims:true },
-    { nama:'Subuh',  kunci:'Fajr',   ikon:'fa-cloud-sun' },
-    { nama:'Dzuhur', kunci:'Dhuhr',  ikon:'fa-sun' },
-    { nama:'Ashar',  kunci:'Asr',    ikon:'fa-cloud-sun' },
+    { nama:'Imsak',kunci:'Imsak',ikon:'fa-mug-hot',ims:true },
+    { nama:'Subuh',kunci:'Fajr',ikon:'fa-cloud-sun' },
+    { nama:'Dzuhur',kunci:'Dhuhr',ikon:'fa-sun' },
+    { nama:'Ashar',kunci:'Asr',ikon:'fa-cloud-sun' },
     { nama:'Maghrib',kunci:'Maghrib',ikon:'fa-moon' },
-    { nama:'Isya',   kunci:'Isha',   ikon:'fa-star-and-crescent' }
+    { nama:'Isya',kunci:'Isha',ikon:'fa-star-and-crescent' }
   ];
-  document.getElementById('mjPrayers').innerHTML = daftar.map(function(item) {
+  document.getElementById('mjPrayers').innerHTML = daftar.map(function(item){
     const jam = mjBersihkanJam(t[item.kunci]);
-    const kelas = 'mj-prayer' + (item.ims ? ' ims' : '') + ' waktu-' + item.kunci;
+    const kelas = 'mj-prayer'+(item.ims?' ims':'')+' waktu-'+item.kunci;
     return '<div class="'+kelas+'"><div class="pi"><i class="fa-solid '+item.ikon+'"></i></div><div class="pn">'+item.nama+'</div><div class="pt">'+jam+'</div></div>';
   }).join('');
 }
 
 function mjBersihkanJam(str) { return String(str).trim().split(' ')[0]; }
-function mjKeMenit(jam) {
-  const b = mjBersihkanJam(jam).split(':');
-  return parseInt(b[0],10)*60 + parseInt(b[1],10);
-}
+function mjKeMenit(jam) { const b = mjBersihkanJam(jam).split(':'); return parseInt(b[0],10)*60 + parseInt(b[1],10); }
 
 function mjTandaiBerikutnya() {
   if (!mjTimings) return;
@@ -150,23 +151,20 @@ function mjTandaiBerikutnya() {
   const now = new Date();
   const menitSekarang = now.getHours()*60 + now.getMinutes();
   let berikutnya = null;
-  for (let i=0;i<urut.length;i++) {
-    if (mjKeMenit(mjTimings[urut[i].kunci]) > menitSekarang) { berikutnya = urut[i]; break; }
-  }
+  for (let i=0;i<urut.length;i++){ if (mjKeMenit(mjTimings[urut[i].kunci]) > menitSekarang){ berikutnya = urut[i]; break; } }
   let lintasHari = false;
-  if (!berikutnya) { berikutnya = urut[0]; lintasHari = true; }
+  if (!berikutnya){ berikutnya = urut[0]; lintasHari = true; }
   document.querySelectorAll('.mj-prayer').forEach(function(el){ el.classList.remove('now'); });
-  const target = document.querySelector('.waktu-' + berikutnya.kunci);
+  const target = document.querySelector('.waktu-'+berikutnya.kunci);
   if (target) target.classList.add('now');
   const menitSholat = mjKeMenit(mjTimings[berikutnya.kunci]);
   let selisih = menitSholat - menitSekarang;
   if (lintasHari) selisih = (24*60 - menitSekarang) + menitSholat;
   const jamSisa = Math.floor(selisih/60), menitSisa = selisih%60;
-  const teksSisa = (jamSisa>0 ? jamSisa+' jam ' : '') + menitSisa + ' menit lagi';
   document.getElementById('mjNextBox').style.display = 'flex';
   document.getElementById('mjNextNama').textContent = berikutnya.nama;
   document.getElementById('mjNextJam').textContent = mjBersihkanJam(mjTimings[berikutnya.kunci]);
-  document.getElementById('mjNextSisa').textContent = teksSisa;
+  document.getElementById('mjNextSisa').textContent = (jamSisa>0 ? jamSisa+' jam ' : '') + menitSisa + ' menit lagi';
 }
 
 // ==========================================================
@@ -181,59 +179,45 @@ async function mjMuatKas() {
     document.getElementById('mjKeluar').textContent = '−' + mjRupiah(kas.bulanKeluar);
     mjRenderTicker(kas.riwayat);
   } catch (error) {
-    const s = document.getElementById('mjSaldo');
-    if (s) s.textContent = 'Gagal memuat';
+    const s = document.getElementById('mjSaldo'); if (s) s.textContent = 'Gagal memuat';
   }
 }
-
 function mjQuoteHariIni() {
   const now = new Date();
   const awalTahun = new Date(now.getFullYear(), 0, 0);
   const hariKe = Math.floor((now - awalTahun) / 86400000);
   return MJ_QUOTES[hariKe % MJ_QUOTES.length];
 }
-
 function mjRenderTicker(riwayat) {
   const wadah = document.getElementById('mjTicker');
   const nf = new Intl.NumberFormat('id-ID');
   const titik = '<span class="mj-tdot">•</span>';
-  let isi = '<span class="mj-ti" style="color:#fbbf24; font-weight:800;">' + MJ_TICKER_PEMBUKA + '</span>' + titik;
+  let isi = '<span class="mj-ti" style="color:#fbbf24; font-weight:800;">'+MJ_TICKER_PEMBUKA+'</span>'+titik;
   if (riwayat && riwayat.length > 0) {
-    isi += riwayat.map(function (r) {
-      const tanda = (r.jenis === 'masuk') ? '+' : '−';
-      const kelas = (r.jenis === 'masuk') ? 'in' : 'out';
+    isi += riwayat.map(function(r){
+      const tanda = (r.jenis==='masuk')?'+':'−'; const kelas = (r.jenis==='masuk')?'in':'out';
       return '<span class="mj-ti '+kelas+'">'+r.keterangan+' '+tanda+nf.format(r.jumlah)+'</span>'+titik;
     }).join('');
-  } else {
-    isi += '<span class="mj-ti">Belum ada transaksi bulan ini</span>' + titik;
-  }
-  isi += '<span class="mj-ti" style="font-style:italic; color:#d1fae5;">' + mjQuoteHariIni() + '</span>' + titik;
-  wadah.innerHTML = '<div class="mj-ticker-track">' + isi + isi + '</div>';
+  } else { isi += '<span class="mj-ti">Belum ada transaksi bulan ini</span>'+titik; }
+  isi += '<span class="mj-ti" style="font-style:italic; color:#d1fae5;">'+mjQuoteHariIni()+'</span>'+titik;
+  wadah.innerHTML = '<div class="mj-ticker-track">'+isi+isi+'</div>';
 }
-
-// --- Form catat kas ---
 function mjBukaFormKas() { document.getElementById('mjFormOv').classList.add('on'); document.getElementById('mjForm').classList.add('on'); }
 function mjTutupFormKas() { document.getElementById('mjFormOv').classList.remove('on'); document.getElementById('mjForm').classList.remove('on'); }
 async function mjSubmitKas() {
   const jenis = document.getElementById('mjJenis').value;
   const jumlah = document.getElementById('mjJumlah').value;
   const keterangan = document.getElementById('mjKet').value;
-  if (!jumlah || !keterangan) {
-    Swal.fire({ toast:true, position:'top-end', icon:'warning', title:'Jumlah & keterangan wajib diisi', showConfirmButton:false, timer:2000 });
-    return;
-  }
+  if (!jumlah || !keterangan) { Swal.fire({toast:true,position:'top-end',icon:'warning',title:'Jumlah & keterangan wajib diisi',showConfirmButton:false,timer:2000}); return; }
   const btn = document.getElementById('mjBtnSave');
   btn.disabled = true; btn.textContent = 'Menyimpan…';
   try {
     await panggilAPI('simpanTransaksiKas', { jenis:jenis, jumlah:jumlah, keterangan:keterangan, pin: localStorage.getItem('pinTakmir') });
     mjTutupFormKas();
-    document.getElementById('mjJumlah').value = '';
-    document.getElementById('mjKet').value = '';
+    document.getElementById('mjJumlah').value = ''; document.getElementById('mjKet').value = '';
     mjMuatKas();
-    Swal.fire({ toast:true, position:'top-end', icon:'success', title:'Transaksi tersimpan', showConfirmButton:false, timer:2000 });
-  } catch (error) {
-    Swal.fire({ icon:'error', title:'Gagal', text: error.message });
-  }
+    Swal.fire({toast:true,position:'top-end',icon:'success',title:'Transaksi tersimpan',showConfirmButton:false,timer:2000});
+  } catch (error) { Swal.fire({icon:'error',title:'Gagal',text:error.message}); }
   btn.disabled = false; btn.textContent = 'Simpan';
 }
 
@@ -241,7 +225,6 @@ async function mjSubmitKas() {
 // LOGIN TAKMIR (Phase 4)
 // ==========================================================
 function mjIsTakmir() { return !!localStorage.getItem('pinTakmir'); }
-
 function mjTerapkanModeTakmir() {
   const aktif = mjIsTakmir();
   document.querySelectorAll('.mj-takmir-only').forEach(function(el){ el.style.display = aktif ? 'block' : 'none'; });
@@ -250,56 +233,33 @@ function mjTerapkanModeTakmir() {
     ? '<i class="fa-solid fa-right-from-bracket"></i> Keluar'
     : '<i class="fa-solid fa-user-shield"></i> Takmir';
 }
-
 async function mjToggleTakmir() {
   if (mjIsTakmir()) {
-    const r = await Swal.fire({
-      title:'Mode Takmir', icon:'info', showDenyButton:true, showCancelButton:true,
-      confirmButtonText:'Ubah PIN', denyButtonText:'Keluar', cancelButtonText:'Tutup',
-      confirmButtonColor:'#064e3b', denyButtonColor:'#ef4444'
-    });
+    const r = await Swal.fire({ title:'Mode Takmir', icon:'info', showDenyButton:true, showCancelButton:true,
+      confirmButtonText:'Ubah PIN', denyButtonText:'Keluar', cancelButtonText:'Tutup', confirmButtonColor:'#064e3b', denyButtonColor:'#ef4444' });
     if (r.isConfirmed) mjUbahPinTakmir();
-    else if (r.isDenied) {
-      localStorage.removeItem('pinTakmir'); mjTerapkanModeTakmir();
-      Swal.fire({ toast:true, position:'top-end', icon:'success', title:'Keluar mode takmir', showConfirmButton:false, timer:1800 });
-    }
+    else if (r.isDenied) { localStorage.removeItem('pinTakmir'); mjTerapkanModeTakmir(); Swal.fire({toast:true,position:'top-end',icon:'success',title:'Keluar mode takmir',showConfirmButton:false,timer:1800}); }
     return;
   }
-  const { value: pin } = await Swal.fire({
-    title:'Login Takmir', input:'password', inputLabel:'Masukkan PIN takmir', inputPlaceholder:'••••',
-    showCancelButton:true, confirmButtonText:'Masuk', confirmButtonColor:'#064e3b'
-  });
+  const { value: pin } = await Swal.fire({ title:'Login Takmir', input:'password', inputLabel:'Masukkan PIN takmir', inputPlaceholder:'••••', showCancelButton:true, confirmButtonText:'Masuk', confirmButtonColor:'#064e3b' });
   if (!pin) return;
   try {
     const res = await panggilAPI('loginTakmir', { pin: pin });
-    if (res.ok) {
-      localStorage.setItem('pinTakmir', pin); mjTerapkanModeTakmir();
-      Swal.fire({ toast:true, position:'top-end', icon:'success', title:'Selamat datang, Takmir', showConfirmButton:false, timer:2000 });
-    } else {
-      Swal.fire({ icon:'error', title:'Gagal', text: res.pesan || 'PIN salah' });
-    }
-  } catch (error) { Swal.fire({ icon:'error', title:'Gagal', text: error.message }); }
+    if (res.ok) { localStorage.setItem('pinTakmir', pin); mjTerapkanModeTakmir(); mjCekPopupIsbat();
+      Swal.fire({toast:true,position:'top-end',icon:'success',title:'Selamat datang, Takmir',showConfirmButton:false,timer:2000}); }
+    else Swal.fire({icon:'error',title:'Gagal',text:res.pesan||'PIN salah'});
+  } catch (error) { Swal.fire({icon:'error',title:'Gagal',text:error.message}); }
 }
-
 async function mjUbahPinTakmir() {
   const { value: form } = await Swal.fire({
     title:'Ubah PIN Takmir',
-    html:'<input id="mjPinLama" type="password" class="swal2-input" placeholder="PIN lama">'
-       + '<input id="mjPinBaru" type="password" class="swal2-input" placeholder="PIN baru">',
+    html:'<input id="mjPinLama" type="password" class="swal2-input" placeholder="PIN lama"><input id="mjPinBaru" type="password" class="swal2-input" placeholder="PIN baru">',
     showCancelButton:true, confirmButtonText:'Simpan', confirmButtonColor:'#064e3b',
-    preConfirm: function () {
-      const lama = document.getElementById('mjPinLama').value;
-      const baru = document.getElementById('mjPinBaru').value;
-      if (!lama || !baru) { Swal.showValidationMessage('Kedua PIN wajib diisi'); return false; }
-      return { pinLama: lama, pinBaru: baru };
-    }
+    preConfirm: function(){ const lama=document.getElementById('mjPinLama').value, baru=document.getElementById('mjPinBaru').value; if(!lama||!baru){Swal.showValidationMessage('Kedua PIN wajib diisi');return false;} return {pinLama:lama,pinBaru:baru}; }
   });
   if (!form) return;
-  try {
-    const pesan = await panggilAPI('updatePinTakmir', { pinLama: form.pinLama, pinBaru: form.pinBaru });
-    localStorage.setItem('pinTakmir', form.pinBaru);
-    Swal.fire({ icon:'success', title:'Berhasil', text: pesan });
-  } catch (error) { Swal.fire({ icon:'error', title:'Gagal', text: error.message }); }
+  try { const pesan = await panggilAPI('updatePinTakmir', {pinLama:form.pinLama, pinBaru:form.pinBaru}); localStorage.setItem('pinTakmir', form.pinBaru); Swal.fire({icon:'success',title:'Berhasil',text:pesan}); }
+  catch (error) { Swal.fire({icon:'error',title:'Gagal',text:error.message}); }
 }
 
 // ==========================================================
@@ -309,184 +269,254 @@ function mjBukaPanel(id) {
   document.getElementById(id).classList.add('on');
   if (id === 'mjPanelPetugas') mjMuatPetugas();
   if (id === 'mjPanelJadwal') mjMuatJadwal();
+  if (id === 'mjPanelKalender') mjMuatKalender();
 }
 function mjTutupPanel(id) { document.getElementById(id).classList.remove('on'); }
 
 async function mjMuatPetugas() {
   const body = document.getElementById('mjPetugasBody');
   body.innerHTML = '<div class="mj-loading">Memuat…</div>';
-  try {
-    mjPetugas = await panggilAPI('getPetugas');
-    mjRenderPetugas();
-  } catch (error) {
-    body.innerHTML = '<div class="mj-loading" style="color:#ef4444;">Gagal memuat: ' + error.message + '</div>';
-  }
+  try { mjPetugas = await panggilAPI('getPetugas'); mjRenderPetugas(); }
+  catch (error) { body.innerHTML = '<div class="mj-loading" style="color:#ef4444;">Gagal memuat: '+error.message+'</div>'; }
 }
-
 function mjRenderPetugas() {
   document.getElementById('mjPetugasBody').innerHTML =
-      mjBlokPetugas('Imam', 'imam', mjPetugas.imam)
-    + mjBlokPetugas('Muadzin', 'muadzin', mjPetugas.muadzin)
-    + mjBlokPetugas('Penceramah Kultum', 'penceramah', mjPetugas.penceramah);
+      mjBlokPetugas('Imam','imam',mjPetugas.imam)
+    + mjBlokPetugas('Muadzin','muadzin',mjPetugas.muadzin)
+    + mjBlokPetugas('Penceramah Kultum','penceramah',mjPetugas.penceramah);
 }
-
 function mjBlokPetugas(judul, peran, daftar) {
-  let list = '';
-  if (!daftar || daftar.length === 0) {
-    list = '<div class="mj-empty">Belum ada</div>';
-  } else {
-    list = daftar.map(function(n) {
-      return '<div class="mj-prow"><span>'+n+'</span>'
-           + '<button onclick="mjHapusPetugas(\''+n+'\',\''+peran+'\')"><i class="fa-solid fa-trash"></i></button></div>';
-    }).join('');
-  }
-  return '<div class="mj-sec"><span class="mj-bar"></span><h3>'+judul+'</h3></div>'
-       + '<div class="mj-plist">'+list+'</div>'
+  let list;
+  if (!daftar || daftar.length === 0) list = '<div class="mj-empty">Belum ada</div>';
+  else list = daftar.map(function(n){ return '<div class="mj-prow"><span>'+n+'</span><button onclick="mjHapusPetugas(\''+n+'\',\''+peran+'\')"><i class="fa-solid fa-trash"></i></button></div>'; }).join('');
+  return '<div class="mj-sec"><span class="mj-bar"></span><h3>'+judul+'</h3></div><div class="mj-plist">'+list+'</div>'
        + '<button class="mj-add" onclick="mjTambahPetugas(\''+peran+'\')"><i class="fa-solid fa-plus"></i> Tambah</button>';
 }
-
 async function mjTambahPetugas(peran) {
-  const { value: nama } = await Swal.fire({
-    title:'Tambah '+peran, input:'text', inputPlaceholder:'Nama petugas',
-    showCancelButton:true, confirmButtonText:'Tambah', confirmButtonColor:'#064e3b'
-  });
+  const { value: nama } = await Swal.fire({ title:'Tambah '+peran, input:'text', inputPlaceholder:'Nama petugas', showCancelButton:true, confirmButtonText:'Tambah', confirmButtonColor:'#064e3b' });
   if (!nama) return;
-  try {
-    await panggilAPI('tambahPetugas', { nama:nama, peran:peran, pin: localStorage.getItem('pinTakmir') });
-    mjMuatPetugas();
-    Swal.fire({ toast:true, position:'top-end', icon:'success', title:'Petugas ditambahkan', showConfirmButton:false, timer:1800 });
-  } catch (error) { Swal.fire({ icon:'error', title:'Gagal', text: error.message }); }
+  try { await panggilAPI('tambahPetugas', {nama:nama, peran:peran, pin:localStorage.getItem('pinTakmir')}); mjMuatPetugas(); Swal.fire({toast:true,position:'top-end',icon:'success',title:'Petugas ditambahkan',showConfirmButton:false,timer:1800}); }
+  catch (error) { Swal.fire({icon:'error',title:'Gagal',text:error.message}); }
 }
-
 async function mjHapusPetugas(nama, peran) {
-  const r = await Swal.fire({
-    title:'Hapus '+nama+'?', icon:'warning', showCancelButton:true,
-    confirmButtonText:'Hapus', cancelButtonText:'Batal', confirmButtonColor:'#ef4444'
-  });
+  const r = await Swal.fire({ title:'Hapus '+nama+'?', icon:'warning', showCancelButton:true, confirmButtonText:'Hapus', cancelButtonText:'Batal', confirmButtonColor:'#ef4444' });
   if (!r.isConfirmed) return;
-  try {
-    await panggilAPI('hapusPetugas', { nama:nama, peran:peran, pin: localStorage.getItem('pinTakmir') });
-    mjMuatPetugas();
-    Swal.fire({ toast:true, position:'top-end', icon:'success', title:'Petugas dihapus', showConfirmButton:false, timer:1800 });
-  } catch (error) { Swal.fire({ icon:'error', title:'Gagal', text: error.message }); }
+  try { await panggilAPI('hapusPetugas', {nama:nama, peran:peran, pin:localStorage.getItem('pinTakmir')}); mjMuatPetugas(); Swal.fire({toast:true,position:'top-end',icon:'success',title:'Petugas dihapus',showConfirmButton:false,timer:1800}); }
+  catch (error) { Swal.fire({icon:'error',title:'Gagal',text:error.message}); }
 }
 
 // ==========================================================
-// JADWAL RAMADHAN (Phase 5) — 30 malam
+// JADWAL RAMADHAN (Phase 5 + tanggal Masehi & "hari ini" dari Phase 6)
 // ==========================================================
 async function mjMuatJadwal() {
   const body = document.getElementById('mjJadwalBody');
   body.innerHTML = '<div class="mj-loading">Memuat…</div>';
   try {
-    if (!mjPetugas) mjPetugas = await panggilAPI('getPetugas');   // untuk dropdown
+    if (!mjPetugas) mjPetugas = await panggilAPI('getPetugas');
     mjJadwalData = await panggilAPI('getJadwalRamadhan');
     mjRenderJadwal();
-  } catch (error) {
-    body.innerHTML = '<div class="mj-loading" style="color:#ef4444;">Gagal memuat: ' + error.message + '</div>';
-  }
+  } catch (error) { body.innerHTML = '<div class="mj-loading" style="color:#ef4444;">Gagal memuat: '+error.message+'</div>'; }
 }
-
+// Tanggal Masehi malam ke-n (butuh mjRamadhanMulai dari Phase 6)
+function mjTanggalMalam(n) {
+  if (!mjRamadhanMulai) return null;
+  const d = new Date(mjRamadhanMulai);
+  d.setDate(d.getDate() + (n - 1));
+  return d;
+}
 function mjRenderJadwal() {
   const tahun = mjTahunRamadhan();
+  const malamIni = mjMalamKe();   // null bila bukan Ramadhan
   let html = '<div class="mj-jadwal-grid">';
-  for (let n = 1; n <= 30; n++) {
+  for (let n=1;n<=30;n++){
     const j = mjJadwalData[n];
     const terisi = j && (j.imam || j.muadzin || j.penceramah);
-    html += '<div class="mj-jcard" onclick="mjEditMalam('+n+')">'
-          + '<div class="mj-jhead"><div class="mj-jhijri">'+n+' Ramadhan'+(tahun ? ' '+tahun+' H' : '')+'</div>'
-          + '<div class="mj-jmalam">Malam ke-'+n+'</div></div>';
+    const tgl = mjTanggalMalam(n);
+    const iniHariIni = (malamIni === n);
+    html += '<div class="mj-jcard'+(iniHariIni?' today':'')+'" onclick="mjEditMalam('+n+')">'
+          + '<div class="mj-jhead"><div class="mj-jhijri">'+n+' Ramadhan'+(tahun?' '+tahun+' H':'')+'</div>'
+          + '<div class="mj-jmalam">'+(tgl ? mjFormatTanggalID(tgl) : 'Malam ke-'+n)+(iniHariIni?' • Hari ini':'')+'</div></div>';
     if (terisi) {
       html += '<div class="mj-jbody">'
             + '<div class="mj-jcell"><span>Imam</span><b>'+(j.imam||'-')+'</b></div>'
             + '<div class="mj-jcell"><span>Muadzin</span><b>'+(j.muadzin||'-')+'</b></div>'
             + '<div class="mj-jcell"><span>Kultum</span><b>'+(j.penceramah||'-')+'</b></div></div>';
-    } else {
-      html += '<div class="mj-jkosong">Belum diatur — ketuk untuk isi</div>';
-    }
+    } else { html += '<div class="mj-jkosong">Belum diatur — ketuk untuk isi</div>'; }
     html += '</div>';
   }
-  html += '</div>';
-  document.getElementById('mjJadwalBody').innerHTML = html;
+  document.getElementById('mjJadwalBody').innerHTML = html + '</div>';
 }
-
-// Buka bottom sheet edit satu malam
 function mjEditMalam(malam) {
   const j = mjJadwalData[malam] || { imam:'', muadzin:'', penceramah:'', tema:'' };
   document.getElementById('mjSheetMalam').innerHTML =
-      '<div class="mj-grip"></div>'
-    + '<h4>Malam ke-'+malam+' Ramadhan</h4>'
-    + mjFieldPetugas('Imam', 'imam', mjPetugas.imam, j.imam)
-    + mjFieldPetugas('Muadzin', 'muadzin', mjPetugas.muadzin, j.muadzin)
-    + mjFieldPetugas('Penceramah Kultum', 'penceramah', mjPetugas.penceramah, j.penceramah)
+      '<div class="mj-grip"></div><h4>Malam ke-'+malam+' Ramadhan</h4>'
+    + mjFieldPetugas('Imam','imam',mjPetugas.imam,j.imam)
+    + mjFieldPetugas('Muadzin','muadzin',mjPetugas.muadzin,j.muadzin)
+    + mjFieldPetugas('Penceramah Kultum','penceramah',mjPetugas.penceramah,j.penceramah)
     + '<div class="mj-fld"><label>Tema Kultum</label><input id="mjTema" value="'+(j.tema||'')+'" placeholder="Cth: Keutamaan sedekah"></div>'
     + '<button class="mj-save" onclick="mjSimpanMalam('+malam+')">Simpan</button>';
   document.getElementById('mjSheetMalamOv').classList.add('on');
   document.getElementById('mjSheetMalam').classList.add('on');
 }
-function mjTutupSheetMalam() {
-  document.getElementById('mjSheetMalamOv').classList.remove('on');
-  document.getElementById('mjSheetMalam').classList.remove('on');
-}
-
-// Bangun 1 field: dropdown petugas + opsi "tulis manual"
+function mjTutupSheetMalam() { document.getElementById('mjSheetMalamOv').classList.remove('on'); document.getElementById('mjSheetMalam').classList.remove('on'); }
 function mjFieldPetugas(label, key, daftar, nilai) {
   daftar = daftar || [];
   const adaDiDaftar = daftar.indexOf(nilai) !== -1;
   let opts = '<option value="">— pilih —</option>';
-  daftar.forEach(function(n) {
-    opts += '<option value="'+n+'"'+(n===nilai ? ' selected' : '')+'>'+n+'</option>';
-  });
+  daftar.forEach(function(n){ opts += '<option value="'+n+'"'+(n===nilai?' selected':'')+'>'+n+'</option>'; });
   const manual = (nilai && !adaDiDaftar);
-  opts += '<option value="__manual__"'+(manual ? ' selected' : '')+'>✏️ Tulis manual…</option>';
-  return '<div class="mj-fld"><label>'+label+'</label>'
-       + '<select id="mjSel_'+key+'" onchange="mjToggleManual(\''+key+'\')">'+opts+'</select>'
-       + '<input id="mjMan_'+key+'" style="display:'+(manual ? 'block' : 'none')+'; margin-top:6px;" '
-       + 'value="'+(manual ? nilai : '')+'" placeholder="Ketik nama (tamu/manual)"></div>';
+  opts += '<option value="__manual__"'+(manual?' selected':'')+'>✏️ Tulis manual…</option>';
+  return '<div class="mj-fld"><label>'+label+'</label><select id="mjSel_'+key+'" onchange="mjToggleManual(\''+key+'\')">'+opts+'</select>'
+       + '<input id="mjMan_'+key+'" style="display:'+(manual?'block':'none')+'; margin-top:6px;" value="'+(manual?nilai:'')+'" placeholder="Ketik nama (tamu/manual)"></div>';
 }
-function mjToggleManual(key) {
-  const sel = document.getElementById('mjSel_'+key);
-  document.getElementById('mjMan_'+key).style.display = (sel.value === '__manual__') ? 'block' : 'none';
-}
-function mjAmbilNilai(key) {
-  const sel = document.getElementById('mjSel_'+key);
-  return (sel.value === '__manual__') ? document.getElementById('mjMan_'+key).value : sel.value;
+function mjToggleManual(key) { const sel = document.getElementById('mjSel_'+key); document.getElementById('mjMan_'+key).style.display = (sel.value==='__manual__')?'block':'none'; }
+function mjAmbilNilai(key) { const sel = document.getElementById('mjSel_'+key); return (sel.value==='__manual__') ? document.getElementById('mjMan_'+key).value : sel.value; }
+async function mjSimpanMalam(malam) {
+  const data = { malam:malam, imam:mjAmbilNilai('imam'), muadzin:mjAmbilNilai('muadzin'), penceramah:mjAmbilNilai('penceramah'), tema:document.getElementById('mjTema').value, pin:localStorage.getItem('pinTakmir') };
+  try { await panggilAPI('simpanJadwalMalam', data); mjTutupSheetMalam(); mjMuatJadwal(); Swal.fire({toast:true,position:'top-end',icon:'success',title:'Jadwal malam '+malam+' tersimpan',showConfirmButton:false,timer:1800}); }
+  catch (error) { Swal.fire({icon:'error',title:'Gagal',text:error.message}); }
 }
 
-async function mjSimpanMalam(malam) {
-  const data = {
-    malam: malam,
-    imam: mjAmbilNilai('imam'),
-    muadzin: mjAmbilNilai('muadzin'),
-    penceramah: mjAmbilNilai('penceramah'),
-    tema: document.getElementById('mjTema').value,
-    pin: localStorage.getItem('pinTakmir')
-  };
+// ==========================================================
+// KALENDER & MODE RAMADHAN (Phase 6)
+// ==========================================================
+
+// Rekomendasi Aladhan: tanggal Masehi untuk "1 <bulanHijri> <tahunRamadhan>"
+async function mjRekomendasiAladhan(bulanHijri) {
+  const tahun = mjTahunRamadhan();
+  if (!tahun) return null;
   try {
-    await panggilAPI('simpanJadwalMalam', data);
-    mjTutupSheetMalam();
-    mjMuatJadwal();
-    Swal.fire({ toast:true, position:'top-end', icon:'success', title:'Jadwal malam '+malam+' tersimpan', showConfirmButton:false, timer:1800 });
-  } catch (error) { Swal.fire({ icon:'error', title:'Gagal', text: error.message }); }
+    const bb = ('0'+bulanHijri).slice(-2);
+    const res = await fetch('https://api.aladhan.com/v1/hToG/01-'+bb+'-'+tahun);
+    const json = await res.json();
+    const g = json.data.gregorian.date.split('-');   // "DD-MM-YYYY"
+    return new Date(parseInt(g[2],10), parseInt(g[1],10)-1, parseInt(g[0],10));
+  } catch (e) { return null; }
+}
+
+// Tanggal mulai Ramadhan: pakai konfirmasi takmir bila ada, kalau tidak → Aladhan.
+async function mjTanggalMulaiRamadhan() {
+  const tahun = mjTahunRamadhan();
+  if (!tahun) return null;
+  // 1) Konfirmasi takmir
+  try {
+    const kal = await panggilAPI('getKalender');
+    if (kal.ramadhan && Number(kal.ramadhan.tahun) === Number(tahun) && kal.ramadhan.tanggal) {
+      return new Date(kal.ramadhan.tanggal);   // "YYYY-MM-DD"
+    }
+  } catch (e) {}
+  // 2) Default aman: Aladhan
+  return await mjRekomendasiAladhan(9);
+}
+
+// Malam ke-berapa hari ini (1-30), atau null bila di luar Ramadhan.
+function mjMalamKe() {
+  if (!mjRamadhanMulai) return null;
+  const selisih = Math.round((mjHariSaja(new Date()) - mjHariSaja(mjRamadhanMulai)) / 86400000);
+  const malam = selisih + 1;
+  return (malam >= 1 && malam <= 30) ? malam : null;
+}
+
+// Siapkan data Ramadhan lalu terapkan tampilan.
+async function mjSiapkanRamadhan() {
+  mjRamadhanMulai = await mjTanggalMulaiRamadhan();
+  await mjTerapkanModeRamadhan();
+  mjCekPopupIsbat();
+}
+
+// Tampilkan/sembunyikan blok Ramadhan untuk warga + petugas malam ini.
+async function mjTerapkanModeRamadhan() {
+  const blok = document.getElementById('mjBlokRamadhan');
+  if (!blok) return;
+  const malam = mjMalamKe();
+  if (!malam) { blok.style.display = 'none'; blok.innerHTML = ''; return; }
+  try { if (!mjJadwalData || Object.keys(mjJadwalData).length === 0) mjJadwalData = await panggilAPI('getJadwalRamadhan'); } catch (e) {}
+  const j = mjJadwalData[malam] || {};
+  const tahun = mjTahunRamadhan();
+  blok.innerHTML =
+      '<div class="mj-sec"><span class="mj-bar"></span><h3>Ramadhan Mubarak</h3><span class="mj-tag">Malam ke-'+malam+'</span></div>'
+    + '<div class="mj-ribbon"><div class="ar">مَرْحَبًا يَا رَمَضَان</div><div class="en">'+malam+' Ramadhan '+tahun+' H</div></div>'
+    + '<div class="mj-duo">'
+    +   '<div class="mj-mini"><div class="ml">Imam</div><div class="mv">'+(j.imam||'—')+'</div></div>'
+    +   '<div class="mj-mini"><div class="ml">Muadzin</div><div class="mv">'+(j.muadzin||'—')+'</div></div>'
+    + '</div>'
+    + '<div class="mj-kultum"><div class="ml">Kultum — '+(j.penceramah||'—')+'</div>'+(j.tema?'<div class="tema">"'+j.tema+'"</div>':'')+'</div>';
+  blok.style.display = 'block';
+}
+
+// --- Panel Kalender (takmir) ---
+const MJ_EVENTS = [
+  { key:'ramadhan',   nama:'1 Ramadhan',            bulan:9 },
+  { key:'syawal',     nama:'1 Syawal (Idul Fitri)', bulan:10 },
+  { key:'dzulhijjah', nama:'1 Dzulhijjah',          bulan:12 }
+];
+async function mjMuatKalender() {
+  const body = document.getElementById('mjKalenderBody');
+  body.innerHTML = '<div class="mj-loading">Memuat…</div>';
+  let kal = {};
+  try { kal = await panggilAPI('getKalender'); } catch (e) {}
+  const tahun = mjTahunRamadhan();
+  let html = '<p class="mj-kal-note">Tahun Hijriah aktif: <b>'+tahun+' H</b>. Bulan besar dikonfirmasi takmir mengikuti sidang isbat. Bila belum dikonfirmasi, app memakai <b>perkiraan Aladhan</b> (default aman).</p>';
+  for (const ev of MJ_EVENTS) {
+    const rec = await mjRekomendasiAladhan(ev.bulan);
+    const conf = (kal[ev.key] && Number(kal[ev.key].tahun) === Number(tahun)) ? kal[ev.key].tanggal : null;
+    html += '<div class="mj-kal-card">'
+          + '<div class="mj-kal-nama">'+ev.nama+' '+tahun+' H</div>'
+          + '<div class="mj-kal-row"><span>Rekomendasi Aladhan</span><b>'+(rec?mjFormatTanggalID(rec):'—')+'</b></div>'
+          + '<div class="mj-kal-row"><span>Dikonfirmasi</span><b class="'+(conf?'ok':'no')+'">'+(conf?mjFormatTanggalID(new Date(conf)):'Belum')+'</b></div>'
+          + '<button class="mj-kal-btn" onclick="mjKonfirmasiTanggal(\''+ev.key+'\','+ev.bulan+')"><i class="fa-solid fa-check"></i> Konfirmasi Tanggal</button>'
+          + '</div>';
+  }
+  body.innerHTML = html;
+}
+async function mjKonfirmasiTanggal(key, bulan) {
+  const rec = await mjRekomendasiAladhan(bulan);
+  const { value: tgl } = await Swal.fire({
+    title:'Konfirmasi Tanggal', input:'date', inputValue: rec ? mjTanggalISO(rec) : '',
+    inputLabel:'Tanggal Masehi (default: rekomendasi Aladhan, ubah bila isbat berbeda)',
+    showCancelButton:true, confirmButtonText:'Simpan', confirmButtonColor:'#064e3b'
+  });
+  if (!tgl) return;
+  try {
+    await panggilAPI('simpanKonfirmasiTanggal', { peristiwa:key, tahun:mjTahunRamadhan(), tanggal:tgl, pin:localStorage.getItem('pinTakmir') });
+    mjMuatKalender();
+    await mjSiapkanRamadhan();   // hitung ulang mode Ramadhan
+    Swal.fire({toast:true,position:'top-end',icon:'success',title:'Konfirmasi tersimpan',showConfirmButton:false,timer:1800});
+  } catch (error) { Swal.fire({icon:'error',title:'Gagal',text:error.message}); }
+}
+
+// --- Pop-up pengingat isbat (khusus takmir, menjelang Ramadhan, bila belum dikonfirmasi) ---
+async function mjCekPopupIsbat() {
+  if (!mjIsTakmir()) return;
+  const tahun = mjTahunRamadhan();
+  let sudah = false;
+  try {
+    const kal = await panggilAPI('getKalender');
+    if (kal.ramadhan && Number(kal.ramadhan.tahun) === Number(tahun) && kal.ramadhan.tanggal) sudah = true;
+  } catch (e) {}
+  if (sudah) return;
+  const rec = await mjRekomendasiAladhan(9);
+  if (!rec) return;
+  const selisih = Math.round((mjHariSaja(rec) - mjHariSaja(new Date())) / 86400000);
+  // Muncul mulai H-3 sampai H+1 dari perkiraan, selama belum dikonfirmasi
+  if (selisih <= 3 && selisih >= -1) {
+    const r = await Swal.fire({
+      title:'🌙 Menjelang Ramadhan',
+      html:'Sidang isbat sebentar lagi. Mohon konfirmasi tanggal <b>1 Ramadhan</b>.<br>Rekomendasi Aladhan: <b>'+mjFormatTanggalID(rec)+'</b>',
+      showCancelButton:true, confirmButtonText:'Konfirmasi sekarang', cancelButtonText:'Nanti saja', confirmButtonColor:'#064e3b'
+    });
+    if (r.isConfirmed) mjBukaPanel('mjPanelKalender');
+  }
 }
 
 // ==========================================================
 // NAVIGASI antar modul (masjid <-> zakat)
 // ==========================================================
-function bukaModulZakat() {
-  document.getElementById('appMasjid').style.display = 'none';
-  document.getElementById('appZakat').style.display = 'block';
-  window.scrollTo(0, 0);
-}
-function bukaBerandaMasjid() {
-  document.getElementById('appZakat').style.display = 'none';
-  document.getElementById('appMasjid').style.display = 'block';
-  window.scrollTo(0, 0);
-}
+function bukaModulZakat() { document.getElementById('appMasjid').style.display='none'; document.getElementById('appZakat').style.display='block'; window.scrollTo(0,0); }
+function bukaBerandaMasjid() { document.getElementById('appZakat').style.display='none'; document.getElementById('appMasjid').style.display='block'; window.scrollTo(0,0); }
 
-// ==========================================================
-// Aktifkan modul masjid saat halaman dimuat.
-// ==========================================================
 window.addEventListener('load', function () { Masjid.init(); });
+
 
 
 
