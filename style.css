@@ -404,3 +404,5 @@ select.form-control{appearance:none; background-image:url("data:image/svg+xml;ch
 .mj-jcell span{display:block; font-size:.6rem; color:var(--ink-soft); font-weight:700; text-transform:uppercase;}
 .mj-jcell b{font-size:.8rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;}
 .mj-jkosong{color:var(--ink-soft); font-size:.8rem; font-style:italic;}
+/* Pastikan dialog SweetAlert selalu tampil di atas panel & bottom sheet */
+.swal2-container{ z-index: 3000 !important; }
