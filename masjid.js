@@ -334,7 +334,8 @@ function mjTanggalMalam(n) {
 function mjRenderJadwal() {
   const tahun = mjTahunRamadhan();
   const malamIni = mjMalamKe();   // null bila bukan Ramadhan
-  let html = '<div class="mj-jadwal-grid">';
+  let html = '<p class="mj-kal-note">Tanggal Masehi di tiap kartu = <b>malam pelaksanaan tarawih</b>. Karena hari Islam dimulai maghrib, <b>malam ke-1</b> jatuh pada malam <b>sebelum</b> puasa pertama (tarawih perdana).</p>';
+  html += '<div class="mj-jadwal-grid">';
   for (let n=1;n<=30;n++){
     const j = mjJadwalData[n];
     const terisi = j && (j.imam || j.muadzin || j.penceramah);
