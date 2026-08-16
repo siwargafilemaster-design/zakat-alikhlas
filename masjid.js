@@ -521,10 +521,24 @@ async function mjCekPopupIsbat() {
 // ==========================================================
 // NAVIGASI antar modul (masjid <-> zakat)
 // ==========================================================
-function bukaModulZakat() { document.getElementById('appMasjid').style.display='none'; document.getElementById('appZakat').style.display='block'; window.scrollTo(0,0); }
-function bukaBerandaMasjid() { document.getElementById('appZakat').style.display='none'; document.getElementById('appMasjid').style.display='block'; window.scrollTo(0,0); }
+function bukaModulZakat() {
+  document.getElementById('appMasjid').style.display = 'none';
+  document.getElementById('appZakat').style.display = 'block';
+  history.replaceState(null, '', '#zakat');                          // tandai di URL
+  window.scrollTo(0, 0);
+}
+function bukaBerandaMasjid() {
+  document.getElementById('appZakat').style.display = 'none';
+  document.getElementById('appMasjid').style.display = 'block';
+  history.replaceState(null, '', location.pathname + location.search); // hapus #zakat
+  window.scrollTo(0, 0);
+}
 
-window.addEventListener('load', function () { Masjid.init(); });
+window.addEventListener('load', function () {
+  Masjid.init();
+  // Deep link: dibuka dengan .../#zakat → langsung ke modul zakat
+  if (location.hash === '#zakat') bukaModulZakat();
+});
 
 
 

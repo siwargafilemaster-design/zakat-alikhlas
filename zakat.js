@@ -628,9 +628,11 @@ function submitBelanja(e) {
   var btn = e.target.querySelector('button');
   btn.disabled = true; btn.innerText = "Mencatat & Mengunggah...";
 
+  var kategoriBelanja = document.getElementById("kategoriBelanja").value;   // + TAMBAH
+  var jumlahSetor = document.getElementById('uangDipakai').value;           // + TAMBAH
+
   var fileInput = document.getElementById('strukBelanja');
   var file = fileInput.files[0];
-
   var data = {
     nominalUang: document.getElementById('uangDipakai').value,
     hargaBeli: document.getElementById('hargaBeliBeras').value,
@@ -645,15 +647,15 @@ function submitBelanja(e) {
       data.fileBase64 = event.target.result.split(',')[1];
       data.namaFile = file.name;
       data.fileTipe = file.type;
-      kirimDataBelanjaKeServer(data, btn);
+      kirimDataBelanjaKeServer(data, btn, kategoriBelanja, jumlahSetor);     // + 2 argumen
     };
     reader.readAsDataURL(file);
   } else {
-    kirimDataBelanjaKeServer(data, btn);
+    kirimDataBelanjaKeServer(data, btn, kategoriBelanja, jumlahSetor);       // + 2 argumen
   }
 }
 
-function kirimDataBelanjaKeServer(data, btn) {
+function kirimDataBelanjaKeServer(data, btn, kategoriBelanja, jumlahSetor) {   // + 2 param
   panggilAPI('simpanBelanjaBeras', data)
     .then(function(msg) {
       tampilAlert('alertBelanja', msg, 'success');
@@ -663,11 +665,39 @@ function kirimDataBelanjaKeServer(data, btn) {
       if (typeof muatBerandaPanitia === 'function') muatBerandaPanitia();
       if (typeof muatTabelBelanja === 'function') muatTabelBelanja();
       if (typeof aturFormBelanja === 'function') aturFormBelanja();
+
+      if (kategoriBelanja === "Setor") setorInfaqKeKasMasjid(jumlahSetor);     // + TAMBAH
     })
     .catch(function(error) {
       tampilAlert('alertBelanja', 'Gagal: ' + error.message, 'danger');
       btn.disabled = false; btn.innerText = "Simpan Catatan Belanja";
     });
+}
+
+// Catat setoran tutup-buku ke Kas Masjid (konfirmasi PIN amil).
+function setorInfaqKeKasMasjid(jumlah) {
+  if (!jumlah || Number(jumlah) <= 0) return;
+  Swal.fire({
+    title: 'Catat ke Kas Masjid?',
+    html: 'Setoran <b>Rp ' + Number(jumlah).toLocaleString('id-ID') + '</b> akan dicatat sebagai pemasukan kas masjid.<br>Masukkan PIN amil untuk mengesahkan.',
+    input: 'password',
+    inputPlaceholder: 'PIN amil',
+    showCancelButton: true,
+    confirmButtonText: 'Setor ke Kas',
+    cancelButtonText: 'Nanti',
+    confirmButtonColor: '#11998e'
+  }).then(function(res) {
+    if (!res.isConfirmed || !res.value) return;
+    panggilAPI('setorZakatKeKas', {
+      jumlah: jumlah,
+      keterangan: 'Setoran Infaq dari Zakat Fitrah (Tutup Buku)',
+      pin: res.value
+    }).then(function(m) {
+      Swal.fire({ icon: 'success', title: 'Tercatat di Kas Masjid', text: m, confirmButtonColor: '#11998e' });
+    }).catch(function(err) {
+      Swal.fire({ icon: 'error', title: 'Gagal setor ke kas', text: err.message });
+    });
+  });
 }
 
 // ==========================================
