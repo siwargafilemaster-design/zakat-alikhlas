@@ -437,3 +437,22 @@ select.form-control{appearance:none; background-image:url("data:image/svg+xml;ch
 .mj-kal-row b.ok{color:var(--secondary);}
 .mj-kal-row b.no{color:var(--ink-soft); font-weight:600;}
 .mj-kal-btn{width:100%; margin-top:12px; padding:11px; background:var(--primary); color:#fff; border:none; border-radius:12px; font-family:inherit; font-weight:800; font-size:.85rem; cursor:pointer;}
+
+/* Popup SweetAlert: cegah melebar & rapikan input di tengah */
+.swal2-popup { max-width: 92vw; box-sizing: border-box; }
+.swal2-input, .swal2-textarea, .swal2-select {
+  width: 80%;
+  max-width: 260px;
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Panel Kelola Kas — kartu transaksi */
+.mj-kaskartu{display:flex; align-items:center; justify-content:space-between; gap:10px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:13px 15px; margin-bottom:9px; cursor:pointer; box-shadow:0 8px 22px -20px rgba(6,78,59,.5);}
+.mj-kaskiri b{font-size:.9rem; display:block;}
+.mj-kaskiri small{font-size:.72rem; color:var(--ink-soft);}
+.mj-kasnilai{font-weight:800; font-size:.92rem; white-space:nowrap;}
+.mj-kasnilai.in{color:var(--secondary);}
+.mj-kasnilai.out{color:#ef4444;}
+.mj-hapus{width:100%; padding:12px; margin-top:10px; background:#fee2e2; color:#ef4444; border:none; border-radius:13px; font-family:inherit; font-weight:800; font-size:.9rem; cursor:pointer;}

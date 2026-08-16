@@ -58,6 +58,7 @@ let mjTimings = null;
 let mjHijriYear = null, mjHijriMonth = null;
 let mjPetugas = null;
 let mjJadwalData = {};
+let mjKasList = [];
 let mjRamadhanMulai = null;   // Date awal 1 Ramadhan (konfirmasi takmir / Aladhan)
 
 // ==========================================================
@@ -227,6 +228,75 @@ async function mjSubmitKas() {
 }
 
 // ==========================================================
+// KELOLA KAS (takmir): kartu transaksi bulan ini + edit & hapus
+// ==========================================================
+async function mjMuatKelolaKas() {
+  const body = document.getElementById('mjKelolaKasBody');
+  body.innerHTML = '<div class="mj-loading">Memuat…</div>';
+  try {
+    mjKasList = await panggilAPI('getKasBulanIni');
+    mjRenderKelolaKas();
+  } catch (e) {
+    body.innerHTML = '<div class="mj-loading" style="color:#ef4444;">Gagal memuat: ' + e.message + '</div>';
+  }
+}
+function mjRenderKelolaKas() {
+  const body = document.getElementById('mjKelolaKasBody');
+  if (!mjKasList || mjKasList.length === 0) { body.innerHTML = '<div class="mj-empty">Belum ada transaksi bulan ini.</div>'; return; }
+  const nf = new Intl.NumberFormat('id-ID');
+  body.innerHTML = mjKasList.map(function (t, i) {
+    const masuk = (t.jenis === 'masuk');
+    const tanda = masuk ? '+' : '−';
+    const warna = masuk ? 'in' : 'out';
+    return '<div class="mj-kaskartu" onclick="mjEditTransaksi(' + i + ')">'
+         + '<div class="mj-kaskiri"><b>' + t.keterangan + '</b><small>' + t.tanggal + '</small></div>'
+         + '<div class="mj-kasnilai ' + warna + '">' + tanda + 'Rp ' + nf.format(t.jumlah) + '</div></div>';
+  }).join('');
+}
+function mjEditTransaksi(i) {
+  const t = mjKasList[i];
+  document.getElementById('mjSheetKas').innerHTML =
+      '<div class="mj-grip"></div><h4>Edit Transaksi</h4>'
+    + '<div class="mj-fld"><label>Jenis</label><select id="mjEditJenis">'
+    +   '<option value="masuk"' + (t.jenis === 'masuk' ? ' selected' : '') + '>Pemasukan (masuk)</option>'
+    +   '<option value="keluar"' + (t.jenis === 'keluar' ? ' selected' : '') + '>Pengeluaran (keluar)</option></select></div>'
+    + '<div class="mj-fld"><label>Jumlah (Rp)</label><input type="number" id="mjEditJumlah" value="' + t.jumlah + '"></div>'
+    + '<div class="mj-fld"><label>Keterangan</label><input type="text" id="mjEditKet" value="' + (t.keterangan || '') + '"></div>'
+    + '<button class="mj-save" onclick="mjSimpanEditTransaksi(' + t.baris + ')">Simpan Perubahan</button>'
+    + '<button class="mj-hapus" onclick="mjHapusTransaksi(' + t.baris + ')"><i class="fa-solid fa-trash"></i> Hapus Transaksi</button>';
+  document.getElementById('mjSheetKasOv').classList.add('on');
+  document.getElementById('mjSheetKas').classList.add('on');
+}
+function mjTutupSheetKas() {
+  document.getElementById('mjSheetKasOv').classList.remove('on');
+  document.getElementById('mjSheetKas').classList.remove('on');
+}
+async function mjSimpanEditTransaksi(baris) {
+  const data = {
+    baris: baris,
+    jenis: document.getElementById('mjEditJenis').value,
+    jumlah: document.getElementById('mjEditJumlah').value,
+    keterangan: document.getElementById('mjEditKet').value,
+    pin: localStorage.getItem('pinTakmir')
+  };
+  if (!data.jumlah || !data.keterangan) { Swal.fire({ toast:true, position:'top-end', icon:'warning', title:'Jumlah & keterangan wajib diisi', showConfirmButton:false, timer:2000 }); return; }
+  try {
+    await panggilAPI('editTransaksiKas', data);
+    mjTutupSheetKas(); mjMuatKelolaKas(); mjMuatKas();   // segarkan panel + beranda
+    Swal.fire({ toast:true, position:'top-end', icon:'success', title:'Transaksi diperbarui', showConfirmButton:false, timer:1800 });
+  } catch (e) { Swal.fire({ icon:'error', title:'Gagal', text:e.message }); }
+}
+async function mjHapusTransaksi(baris) {
+  const r = await Swal.fire({ title:'Hapus transaksi ini?', icon:'warning', showCancelButton:true, confirmButtonText:'Hapus', cancelButtonText:'Batal', confirmButtonColor:'#ef4444' });
+  if (!r.isConfirmed) return;
+  try {
+    await panggilAPI('hapusTransaksiKas', { baris: baris, pin: localStorage.getItem('pinTakmir') });
+    mjTutupSheetKas(); mjMuatKelolaKas(); mjMuatKas();
+    Swal.fire({ toast:true, position:'top-end', icon:'success', title:'Transaksi dihapus', showConfirmButton:false, timer:1800 });
+  } catch (e) { Swal.fire({ icon:'error', title:'Gagal', text:e.message }); }
+}
+
+// ==========================================================
 // LOGIN TAKMIR (Phase 4)
 // ==========================================================
 function mjIsTakmir() { return !!localStorage.getItem('pinTakmir'); }
@@ -275,6 +345,7 @@ function mjBukaPanel(id) {
   if (id === 'mjPanelPetugas') mjMuatPetugas();
   if (id === 'mjPanelJadwal') mjMuatJadwal();
   if (id === 'mjPanelKalender') mjMuatKalender();
+  if (id === 'mjPanelKelolaKas') mjMuatKelolaKas();      // + TAMBAH
 }
 function mjTutupPanel(id) { document.getElementById(id).classList.remove('on'); }
 
@@ -533,11 +604,47 @@ function bukaBerandaMasjid() {
   history.replaceState(null, '', location.pathname + location.search); // hapus #zakat
   window.scrollTo(0, 0);
 }
+// ==========================================================
+// TOMBOL BACK HP: tutup lapisan terbuka dulu; keluar hanya di beranda (tekan 2x)
+// ==========================================================
+let mjBackSiapKeluar = false;
+
+function mjSetupBackButton() {
+  history.pushState({ mjGuard: true }, '');
+  window.addEventListener('popstate', function () {
+    if (mjTutupLapisanTeratas()) {
+      history.pushState({ mjGuard: true }, '');          // pasang lagi utk back berikutnya
+    } else if (mjBackSiapKeluar) {
+      history.back();                                     // benar-benar keluar
+    } else {
+      mjBackSiapKeluar = true;
+      history.pushState({ mjGuard: true }, '');
+      Swal.fire({ toast:true, position:'bottom', icon:'info', title:'Tekan sekali lagi untuk keluar', showConfirmButton:false, timer:2000 });
+      setTimeout(function () { mjBackSiapKeluar = false; }, 2000);
+    }
+  });
+}
+
+// Tutup satu lapisan teratas yang terbuka. Return true bila ada yang ditutup.
+function mjTutupLapisanTeratas() {
+  const ada = function(id){ const e=document.getElementById(id); return e && (e.classList.contains('on')||e.classList.contains('show')||e.classList.contains('active')); };
+  if (ada('mjSheetMalamOv')) { mjTutupSheetMalam(); return true; }
+  if (ada('mjSheetKasOv'))   { mjTutupSheetKas();   return true; }
+  if (ada('mjFormOv'))       { mjTutupFormKas();    return true; }
+  const panels = ['mjPanelPetugas','mjPanelJadwal','mjPanelKalender','mjPanelKelolaKas'];
+  for (let i=0;i<panels.length;i++){ const p=document.getElementById(panels[i]); if (p && p.classList.contains('on')) { mjTutupPanel(panels[i]); return true; } }
+  if (ada('sheetOverlay') && typeof tutupSheet==='function')       { tutupSheet();      return true; }
+  if (ada('layarCatat')   && typeof tutupCatat==='function')       { tutupCatat();      return true; }
+  if (ada('modalLogin')   && typeof tutupModalLogin==='function')  { tutupModalLogin(); return true; }
+  const az = document.getElementById('appZakat');
+  if (az && az.style.display === 'block') { bukaBerandaMasjid(); return true; }
+  return false;
+}
 
 window.addEventListener('load', function () {
   Masjid.init();
-  // Deep link: dibuka dengan .../#zakat → langsung ke modul zakat
   if (location.hash === '#zakat') bukaModulZakat();
+  mjSetupBackButton();                                    // + TAMBAH
 });
 
 
