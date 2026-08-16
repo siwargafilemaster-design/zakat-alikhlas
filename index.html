@@ -322,7 +322,7 @@
         <div id="alertZakat" class="alert"></div>
         <form id="formZakat" onsubmit="submitZakat(event)">
           <div class="form-group"><label>Nama Penyetor (KK)</label><input type="text" id="namaKK" class="form-control" required placeholder="Cth: Edi Susilo"></div>
-          <div class="form-group"><label>No. WhatsApp (awalan 08 / 628)</label><input type="text" id="noWa" class="form-control" required placeholder="Cth: 08123456789"></div>
+          <div class="form-group"><label>No. WhatsApp (awalan 08 / 628)</label><input type="text" id="noWa" inputmode="numeric" class="form-control" required placeholder="Cth: 08123456789"></div>
           <div class="form-group"><label>Jenis Zakat</label>
             <select id="jenisZakat" class="form-control" onchange="kalkulasiZakat()" required>
               <option value="Zakat Fitrah">Zakat Fitrah</option>
@@ -342,7 +342,7 @@
             <label style="color:var(--primary); font-weight:800; font-size:.8rem;">Rincian Nama Anggota Keluarga</label>
             <div id="listRincian"></div>
           </div>
-          <div class="form-group"><label>Total Dibayar (Otomatis)</label><input type="text" id="totalDibayar" class="form-control" required><small style="color:var(--text-light);" id="hintHitung">Hasil hitung otomatis dari sheet konfigurasi.</small></div>
+          <div class="form-group"><label>Total Dibayar (Otomatis)</label><input type="text" id="totalDibayar" inputmode="numeric" class="form-control" required><small style="color:var(--text-light);" id="hintHitung">Hasil hitung otomatis dari sheet konfigurasi.</small></div>
           <button type="submit" class="btn-submit" id="btnSubmitZakat">Simpan &amp; Kirim Resi WA</button>
         </form>
       </div>
