@@ -1,7 +1,7 @@
 {
-  "name": "Zakat Masjid Al Ikhlas",
-  "short_name": "Zakat Al Ikhlas",
-  "description": "Sistem penerimaan dan penyaluran zakat Masjid Al Ikhlas, Griya Gamersi Lalung.",
+  "name": "Masjid Al Ikhlas",
+  "short_name": "Al Ikhlas",
+  "description": "Aplikasi Masjid Al Ikhlas, Griya Gamersi Lalung.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
