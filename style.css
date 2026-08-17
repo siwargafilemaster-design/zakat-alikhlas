@@ -456,6 +456,12 @@ select.form-control{appearance:none; background-image:url("data:image/svg+xml;ch
 .mj-kasnilai.in{color:var(--secondary);}
 .mj-kasnilai.out{color:#ef4444;}
 .mj-hapus{width:100%; padding:12px; margin-top:10px; background:#fee2e2; color:#ef4444; border:none; border-radius:13px; font-family:inherit; font-weight:800; font-size:.9rem; cursor:pointer;}
+/* Baris atas kartu infaq: saldo (kiri) + tombol QRIS (kanan) */
+.mj-infaq-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.mj-infaq-saldo{ min-width:0; }
 
-.mj-qris-btn{width:100%; margin-top:14px; padding:12px; background:#fff; color:var(--primary); border:1.5px solid var(--primary); border-radius:13px; font-family:inherit; font-weight:800; font-size:.88rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;}
-.mj-qris-btn:active{transform:scale(.98);}
+/* Tombol QRIS: icon kiri + tulisan kecil di kanannya */
+.mj-qris-btn{ flex:0 0 auto; display:flex; flex-direction:row; align-items:center; gap:8px; background:#fff; color:var(--primary); border:1.5px solid var(--primary); border-radius:14px; padding:9px 12px; cursor:pointer; font-family:inherit; }
+.mj-qris-btn i{ font-size:1.7rem; }
+.mj-qris-btn span{ font-size:.58rem; font-weight:800; line-height:1.15; text-align:left; text-transform:uppercase; letter-spacing:.02em; max-width:56px; }
+.mj-qris-btn:active{ transform:scale(.97); }

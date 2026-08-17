@@ -56,13 +56,20 @@
       <!-- Infaq & Kas Masjid -->
       <div class="mj-sec"><span class="mj-bar"></span><h3>Infaq &amp; Kas Masjid</h3></div>
       <div class="mj-infaq">
-        <div class="mj-saldo-lbl">Saldo Kas Masjid</div>
-        <div class="mj-saldo" id="mjSaldo">Rp 0</div>
+        <div class="mj-infaq-top">
+          <div class="mj-infaq-saldo">
+            <div class="mj-saldo-lbl">Saldo Kas Masjid</div>
+            <div class="mj-saldo" id="mjSaldo">Rp 0</div>
+          </div>
+          <button class="mj-qris-btn" onclick="mjLihatQris()">
+            <i class="fa-solid fa-qrcode"></i>
+            <span>Infaq via QRIS</span>
+          </button>
+        </div>
         <div class="mj-ring">
           <div class="r"><small>Saldo Awal</small><b id="mjSaldoAwal">—</b></div>
           <div class="r in"><small>Masuk</small><b id="mjMasuk">—</b></div>
           <div class="r out"><small>Keluar</small><b id="mjKeluar">—</b></div>
-          <button class="mj-qris-btn" onclick="mjLihatQris()"><i class="fa-solid fa-qrcode"></i> Infaq via QRIS</button>
         </div>
       </div>
       <div class="mj-ticker" id="mjTicker"><div class="mj-ticker-track">Memuat riwayat…</div></div>
