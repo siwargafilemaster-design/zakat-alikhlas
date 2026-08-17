@@ -9,7 +9,7 @@
 
 // Naikkan angka versi ini setiap kali Anda mengubah file app.
 // Contoh: 'zakat-v1' -> 'zakat-v2'. Ini memaksa HP mengambil versi baru.
-const CACHE_NAME = 'masjid-v3';
+const CACHE_NAME = 'masjid-v4';
 
 // Daftar "kerangka" yang disimpan untuk dibuka cepat / offline.
 const APP_SHELL = [
@@ -20,7 +20,8 @@ const APP_SHELL = [
   './masjid.js',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './qris-alikhlas.jpg'
 ];
 
 // 1. INSTALL: simpan app shell ke cache

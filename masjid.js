@@ -267,6 +267,16 @@ function mjEditTransaksi(i) {
   document.getElementById('mjSheetKasOv').classList.add('on');
   document.getElementById('mjSheetKas').classList.add('on');
 }
+// Tampilkan QRIS masjid untuk infaq (popup besar agar mudah discan).
+function mjLihatQris() {
+  Swal.fire({
+    title: 'Infaq via QRIS',
+    html: '<img src="qris-alikhlas.jpg" alt="QRIS Masjid Al Ikhlas" style="width:100%; max-width:280px; border-radius:12px;">'
+        + '<p style="font-size:.8rem; color:#5b6b64; margin-top:10px;">Scan dengan aplikasi bank / e-wallet Anda. Jazakumullah khairan.</p>',
+    confirmButtonText: 'Tutup',
+    confirmButtonColor: '#064e3b'
+  });
+}
 function mjTutupSheetKas() {
   document.getElementById('mjSheetKasOv').classList.remove('on');
   document.getElementById('mjSheetKas').classList.remove('on');
